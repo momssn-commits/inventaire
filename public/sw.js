@@ -1,7 +1,7 @@
 // Service Worker minimal pour Inventaire PWA
 // Met en cache l'app shell et permet le fonctionnement hors-ligne basique
 
-const CACHE_NAME = 'inventaire-v2';
+const CACHE_NAME = 'inventaire-v3';
 const APP_SHELL = ['/login', '/manifest.webmanifest', '/icons/icon-192.svg', '/icons/icon-512.svg'];
 
 self.addEventListener('install', (event) => {

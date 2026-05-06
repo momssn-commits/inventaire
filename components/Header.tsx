@@ -1,12 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, Search, Sun, Moon, LogOut, Menu, ChevronDown } from 'lucide-react';
 
 export function Header({ user }: { user: { name: string; email: string; role: string } }) {
-  const [dark, setDark] = useState(typeof window !== 'undefined' && document.documentElement.classList.contains('dark'));
+  // Initial state à `null` pour éviter le mismatch d'hydratation : on lit la classe
+  // du <html> uniquement après le montage côté client.
+  const [dark, setDark] = useState<boolean | null>(null);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains('dark'));
+  }, []);
 
   function toggleTheme() {
     const next = !dark;
@@ -35,8 +41,8 @@ export function Header({ user }: { user: { name: string; email: string; role: st
       <button className="btn-ghost p-2" aria-label="Notifications">
         <Bell className="size-5" />
       </button>
-      <button className="btn-ghost p-2" onClick={toggleTheme} aria-label="Thème">
-        {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+      <button className="btn-ghost p-2" onClick={toggleTheme} aria-label="Thème" suppressHydrationWarning>
+        {dark === true ? <Sun className="size-5" /> : <Moon className="size-5" />}
       </button>
 
       <div className="relative">

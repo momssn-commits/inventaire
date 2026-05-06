@@ -9,8 +9,11 @@ export function ApiSection() {
   const [health, setHealth] = useState<Health | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // baseUrl est résolu côté client uniquement pour éviter un mismatch d'hydratation.
+  const [baseUrl, setBaseUrl] = useState('');
 
   useEffect(() => {
+    setBaseUrl(window.location.origin);
     fetch('/api/v1/health')
       .then((r) => r.json())
       .then((j) => setHealth(j.data))
@@ -23,8 +26,6 @@ export function ApiSection() {
       setTimeout(() => setCopied(false), 1200);
     });
   }
-
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   return (
     <div className="card p-5">
