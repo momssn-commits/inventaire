@@ -1,0 +1,688 @@
+// Schéma Prisma — Application Inventaire
+// Couvre les 12 modules du cahier des charges
+// Multi-tenant via companyId, soft-delete via deletedAt, audit via createdBy/updatedBy
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// IDENTITÉ & MULTI-TENANT
+// ============================================================
+
+model Company {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  currency  String   @default("EUR")
+  locale    String   @default("fr-FR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  warehouses Warehouse[]
+  products   Product[]
+  partners   Partner[]
+  pickings   Picking[]
+  poOrders   PurchaseOrder[]
+  mos        ManufacturingOrder[]
+  qualityAlerts QualityAlert[]
+  auditLogs  AuditLog[]
+  equipments Equipment[]
+  repairs    RepairOrder[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("user") // admin, manager, operator, user
+  active       Boolean   @default(true)
+  twoFactor    Boolean   @default(false)
+  lastLoginAt  DateTime?
+  failedAttempts Int     @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  auditLogs AuditLog[]
+
+  @@index([companyId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String   // create, update, delete, login, logout
+  entity    String   // product, picking, ...
+  entityId  String?
+  oldValue  String?  // JSON
+  newValue  String?  // JSON
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([entity, entityId])
+}
+
+// ============================================================
+// MODULE 1 — PRODUITS
+// ============================================================
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  products  Product[]
+  storageStrategy String @default("manual") // manual, fifo, lifo, fefo, closest
+  costingMethod   String @default("standard") // standard, average, fifo
+  createdAt DateTime @default(now())
+}
+
+model UomCategory {
+  id    String @id @default(uuid())
+  name  String @unique // Poids, Volume, Longueur, Surface, Temps, Unités
+  uoms  Uom[]
+}
+
+model Uom {
+  id            String  @id @default(uuid())
+  name          String
+  symbol        String
+  factor        Float   @default(1) // facteur par rapport à l'unité de référence
+  isReference   Boolean @default(false)
+  rounding      Float   @default(0.01)
+  uomCategoryId String
+  uomCategory   UomCategory @relation(fields: [uomCategoryId], references: [id])
+
+  productsAsStock    Product[] @relation("uomStock")
+  productsAsPurchase Product[] @relation("uomPurchase")
+  productsAsSale     Product[] @relation("uomSale")
+}
+
+model Product {
+  id              String  @id @default(uuid())
+  sku             String  @unique
+  barcode         String? @unique
+  name            String
+  description     String?
+  saleDescription String?
+  purchaseDescription String?
+  type            String  @default("storable") // storable, consumable, service
+  tracking        String  @default("none")     // none, lot, serial
+  active          Boolean @default(true)
+
+  salePrice       Float   @default(0)
+  cost            Float   @default(0)
+  costingMethod   String  @default("standard") // standard, average, fifo
+  invoicePolicy   String  @default("order")    // order, delivery
+
+  // Péremption (pour produits suivis par lot)
+  shelfLifeDays   Int?
+  alertDays       Int?
+  removalDays     Int?
+
+  // Réassort
+  minQty          Float   @default(0)
+  maxQty          Float   @default(0)
+  reorderQty      Float   @default(0)
+  leadTimeDays    Int     @default(0)
+  safetyDays      Int     @default(0)
+
+  imageUrl        String?
+  weightKg        Float?
+  volumeM3        Float?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  uomStockId    String
+  uomStock      Uom    @relation("uomStock", fields: [uomStockId], references: [id])
+  uomPurchaseId String?
+  uomPurchase   Uom?   @relation("uomPurchase", fields: [uomPurchaseId], references: [id])
+  uomSaleId     String?
+  uomSale       Uom?   @relation("uomSale", fields: [uomSaleId], references: [id])
+
+  preferredSupplierId String?
+  preferredSupplier   Partner? @relation("preferredSupplier", fields: [preferredSupplierId], references: [id])
+
+  // Relations inverses
+  stockLines   StockLine[]
+  pickingLines PickingLine[]
+  poLines      PurchaseOrderLine[]
+  bomComponents BomComponent[]
+  boms         Bom[]
+  mos          ManufacturingOrder[]
+  lots         Lot[]
+  qcps         QualityCheckPoint[]
+  packagings   ProductPackaging[]
+
+  @@index([companyId])
+  @@index([sku])
+}
+
+model ProductPackaging {
+  id        String @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String  // ex: "Boîte de 6"
+  quantity  Float
+  barcode   String?
+}
+
+model Lot {
+  id           String   @id @default(uuid())
+  name         String   // numéro de lot ou de série
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id])
+  expirationDate DateTime?
+  removalDate    DateTime?
+  alertDate      DateTime?
+  isSerial       Boolean @default(false)
+  condition      String?  // BON ETAT, MAUVAIS ETAT, HORS SERVICE…
+  brand          String?  // marque
+  specifications String?  // spécifications libres
+  serviceName    String?  // affectation organisationnelle
+  notes          String?
+  createdAt    DateTime @default(now())
+
+  stockLines StockLine[]
+
+  @@unique([productId, name])
+  @@index([productId])
+}
+
+// ============================================================
+// MODULE 2 — ENTREPÔTS & EMPLACEMENTS
+// ============================================================
+
+model Warehouse {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  address     String?
+  city        String?
+  zip         String?
+  country     String  @default("FR")
+  managerName String?
+
+  // Configuration des étapes
+  receptionSteps Int @default(1) // 1, 2 ou 3
+  deliverySteps  Int @default(1) // 1, 2 ou 3
+
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  companyId   String
+  company     Company @relation(fields: [companyId], references: [id])
+
+  locations   Location[]
+  pickingsFrom Picking[] @relation("pickingFromWarehouse")
+  pickingsTo   Picking[] @relation("pickingToWarehouse")
+
+  @@index([companyId])
+}
+
+model StorageCategory {
+  id           String  @id @default(uuid())
+  name         String
+  maxWeight    Float?
+  maxHeight    Float?
+  allowMixedProducts Boolean @default(true)
+  allowMixedCategories Boolean @default(true)
+  tempMin      Float?
+  tempMax      Float?
+  locations    Location[]
+}
+
+model Location {
+  id           String  @id @default(uuid())
+  name         String  // ex: WH/Stock/A-3-2-7
+  fullPath     String  // calculé : "Stock / Zone-A / Allée-3 / Étagère-2 / Casier-7"
+  type         String  @default("internal") // internal, view, supplier, customer, transit, inventory, production, scrap
+  barcode      String? @unique
+
+  warehouseId  String?
+  warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  parentId     String?
+  parent       Location? @relation("LocTree", fields: [parentId], references: [id])
+  children     Location[] @relation("LocTree")
+
+  storageCategoryId String?
+  storageCategory   StorageCategory? @relation(fields: [storageCategoryId], references: [id])
+
+  active       Boolean @default(true)
+  createdAt    DateTime @default(now())
+
+  stockLinesIn  StockLine[] @relation("stockLocation")
+  pickingLinesFrom PickingLine[] @relation("plLocFrom")
+  pickingLinesTo   PickingLine[] @relation("plLocTo")
+  countLines    CountLine[]
+
+  @@index([warehouseId])
+  @@index([parentId])
+}
+
+model PutawayRule {
+  id           String @id @default(uuid())
+  name         String
+  productId    String?
+  categoryId   String?
+  packageType  String?
+  destLocationId String
+  priority     Int @default(10)
+  active       Boolean @default(true)
+  createdAt    DateTime @default(now())
+}
+
+// ============================================================
+// MODULE 3 — RÉCEPTION / EXPÉDITION / TRANSFERTS
+// ============================================================
+
+// Picking = Bon de mouvement (BL, BR, transfert interne, OF…)
+model Picking {
+  id          String   @id @default(uuid())
+  reference   String   @unique  // WH/IN/00001, WH/OUT/00001, ...
+  type        String   // receipt, delivery, internal, manufacturing, return
+  state       String   @default("draft") // draft, confirmed, assigned, done, cancelled
+  scheduledAt DateTime?
+  doneAt      DateTime?
+  priority    Int      @default(0)
+  origin      String?  // ex: "PO00012", "SO00033"
+
+  partnerId    String?
+  partner      Partner? @relation(fields: [partnerId], references: [id])
+  fromWarehouseId String?
+  fromWarehouse   Warehouse? @relation("pickingFromWarehouse", fields: [fromWarehouseId], references: [id])
+  toWarehouseId   String?
+  toWarehouse     Warehouse? @relation("pickingToWarehouse", fields: [toWarehouseId], references: [id])
+
+  carrier      String?
+  trackingRef  String?
+  notes        String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  lines    PickingLine[]
+  qcChecks QualityCheck[]
+
+  @@index([companyId, state])
+  @@index([type])
+}
+
+model PickingLine {
+  id          String  @id @default(uuid())
+  pickingId   String
+  picking     Picking @relation(fields: [pickingId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  description String?
+  qtyDemand   Float   @default(0)
+  qtyDone     Float   @default(0)
+  uomSymbol   String  @default("u")
+
+  fromLocationId String?
+  fromLocation   Location? @relation("plLocFrom", fields: [fromLocationId], references: [id])
+  toLocationId   String?
+  toLocation     Location? @relation("plLocTo", fields: [toLocationId], references: [id])
+
+  lotId       String?
+  lotName     String?
+  serialNumber String?
+
+  @@index([pickingId])
+  @@index([productId])
+}
+
+// Snapshots de stock par produit / emplacement / lot
+model StockLine {
+  id         String  @id @default(uuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  locationId String
+  location   Location @relation("stockLocation", fields: [locationId], references: [id])
+  lotId      String?
+  lot        Lot?     @relation(fields: [lotId], references: [id])
+  quantity   Float    @default(0)
+  reserved   Float    @default(0)
+  unitCost   Float    @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([productId, locationId, lotId])
+  @@index([locationId])
+  @@index([productId])
+}
+
+// ============================================================
+// MODULE — Comptages d'inventaire
+// ============================================================
+
+model CountSheet {
+  id        String   @id @default(uuid())
+  reference String   @unique
+  state     String   @default("draft") // draft, in_progress, validated
+  scheduledAt DateTime?
+  validatedAt DateTime?
+  createdAt   DateTime @default(now())
+  notes       String?
+
+  lines CountLine[]
+}
+
+model CountLine {
+  id          String   @id @default(uuid())
+  sheetId     String
+  sheet       CountSheet @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  productId   String
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id])
+  lotName     String?
+  qtyTheoretical Float @default(0)
+  qtyCounted     Float @default(0)
+  qtyDiff        Float @default(0)
+}
+
+// ============================================================
+// PARTENAIRES (fournisseurs / clients)
+// ============================================================
+
+model Partner {
+  id        String  @id @default(uuid())
+  name      String
+  code      String? @unique
+  email     String?
+  phone     String?
+  address   String?
+  city      String?
+  country   String  @default("FR")
+  vatNumber String?
+  type      String  @default("supplier") // supplier, customer, both
+  active    Boolean @default(true)
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  pickings  Picking[]
+  poOrders  PurchaseOrder[]
+  preferredFor Product[] @relation("preferredSupplier")
+
+  @@index([companyId])
+}
+
+// ============================================================
+// MODULE 7 — ACHATS
+// ============================================================
+
+model PurchaseOrder {
+  id          String   @id @default(uuid())
+  reference   String   @unique // PO00001
+  state       String   @default("draft") // draft, sent, confirmed, received, invoiced, cancelled
+  orderedAt   DateTime?
+  expectedAt  DateTime?
+  receivedAt  DateTime?
+  notes       String?
+  totalHt     Float    @default(0)
+
+  partnerId   String
+  partner     Partner @relation(fields: [partnerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  lines PurchaseOrderLine[]
+
+  @@index([companyId, state])
+}
+
+model PurchaseOrderLine {
+  id        String  @id @default(uuid())
+  poId      String
+  po        PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  description String?
+  qty       Float
+  unitPrice Float
+  qtyReceived Float @default(0)
+  totalHt   Float
+}
+
+// ============================================================
+// MODULE 8 — FABRICATION
+// ============================================================
+
+model Bom {
+  id        String  @id @default(uuid())
+  reference String  @unique
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  qtyOutput Float   @default(1)
+  version   Int     @default(1)
+  active    Boolean @default(true)
+  notes     String?
+  createdAt DateTime @default(now())
+
+  components BomComponent[]
+  operations BomOperation[]
+}
+
+model BomComponent {
+  id        String  @id @default(uuid())
+  bomId     String
+  bom       Bom     @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  qty       Float
+}
+
+model WorkCenter {
+  id          String   @id @default(uuid())
+  name        String
+  costHourly  Float    @default(0)
+  capacity    Float    @default(1)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  bomOperations BomOperation[]
+  workOrders    WorkOrder[]
+}
+
+model BomOperation {
+  id           String  @id @default(uuid())
+  bomId        String
+  bom          Bom     @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  name         String
+  durationMin  Float
+  workCenterId String
+  workCenter   WorkCenter @relation(fields: [workCenterId], references: [id])
+  sequence     Int     @default(10)
+}
+
+model ManufacturingOrder {
+  id         String  @id @default(uuid())
+  reference  String  @unique // MO00001
+  state      String  @default("draft") // draft, confirmed, in_progress, done, cancelled
+  qtyToProduce Float
+  qtyProduced  Float @default(0)
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  doneAt       DateTime?
+  notes        String?
+
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  workOrders WorkOrder[]
+
+  @@index([companyId, state])
+}
+
+model WorkOrder {
+  id           String  @id @default(uuid())
+  moId         String
+  mo           ManufacturingOrder @relation(fields: [moId], references: [id], onDelete: Cascade)
+  name         String
+  state        String  @default("pending") // pending, in_progress, done
+  durationMin  Float
+  workCenterId String
+  workCenter   WorkCenter @relation(fields: [workCenterId], references: [id])
+  startedAt    DateTime?
+  doneAt       DateTime?
+}
+
+// ============================================================
+// MODULE 6 — QUALITÉ
+// ============================================================
+
+model QualityCheckPoint {
+  id           String  @id @default(uuid())
+  name         String
+  productId    String?
+  product      Product? @relation(fields: [productId], references: [id])
+  trigger      String  // reception, manufacturing, delivery
+  type         String  // instructions, pass_fail, measure, photo
+  measureMin   Float?
+  measureMax   Float?
+  frequency    String  @default("all") // all, periodic, random
+  frequencyValue Int   @default(1)
+  active       Boolean @default(true)
+  createdAt    DateTime @default(now())
+
+  checks QualityCheck[]
+}
+
+model QualityCheck {
+  id          String  @id @default(uuid())
+  qcpId       String
+  qcp         QualityCheckPoint @relation(fields: [qcpId], references: [id])
+  pickingId   String?
+  picking     Picking? @relation(fields: [pickingId], references: [id])
+  status      String  @default("pending") // pending, pass, fail
+  measure     Float?
+  comment     String?
+  createdAt   DateTime @default(now())
+}
+
+model QualityAlert {
+  id          String  @id @default(uuid())
+  reference   String  @unique
+  title       String
+  description String?
+  state       String  @default("new") // new, in_progress, action, resolved
+  severity    String  @default("medium") // low, medium, high, critical
+  productId   String?
+  partnerId   String?
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+}
+
+// ============================================================
+// MODULE 9 — MAINTENANCE
+// ============================================================
+
+model Equipment {
+  id        String   @id @default(uuid())
+  reference String   @unique
+  name      String
+  category  String?
+  location  String?
+  serial    String?
+  warrantyEndsAt DateTime?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  requests MaintenanceRequest[]
+}
+
+model MaintenanceRequest {
+  id          String  @id @default(uuid())
+  reference   String  @unique
+  title       String
+  description String?
+  type        String  @default("corrective") // corrective, preventive
+  state       String  @default("new") // new, scheduled, in_progress, done
+  scheduledAt DateTime?
+  doneAt      DateTime?
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// ============================================================
+// MODULE 11 — RÉPARATIONS
+// ============================================================
+
+model RepairOrder {
+  id        String  @id @default(uuid())
+  reference String  @unique
+  state     String  @default("new") // new, quoted, in_progress, done, cancelled
+  productName String
+  customerName String?
+  diagnosis String?
+  quoteHt   Float   @default(0)
+  notes     String?
+  createdAt DateTime @default(now())
+  doneAt    DateTime?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+}
+
+// ============================================================
+// MODULE — Sequences (compteurs de références)
+// ============================================================
+
+model Sequence {
+  id      String @id @default(uuid())
+  code    String @unique // ex: PICKING_RECEIPT, PO, MO
+  prefix  String
+  padding Int    @default(5)
+  next    Int    @default(1)
+}
