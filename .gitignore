@@ -23,6 +23,9 @@ prisma/migrations/dev.db
 .turbo/
 .vercel/
 coverage/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+next-env.d.ts
 
 # OS
 .DS_Store
