@@ -36,29 +36,42 @@ type Row = {
 };
 
 function readRows(path: string): Row[] {
-  // Convertir l'XLSX en JSON via un petit script Python (déjà dispo via le skill xlsx)
+  // Convertir l'XLSX en JSON via un petit script Python (compatible pandas 1.x à 3.x).
+  // pandas 3.x sérialise NaN différemment, donc on nettoie explicitement les NaN.
   const json = execSync(
     `python3 -c "
-import pandas as pd, json, sys
+import pandas as pd, json, math
 df = pd.read_excel('${path.replace(/'/g, "\\'")}')
-df = df.where(pd.notnull(df), None)
+
+def clean(v):
+    if v is None:
+        return None
+    try:
+        if isinstance(v, float) and math.isnan(v):
+            return None
+    except Exception:
+        pass
+    if pd.isna(v):
+        return None
+    return v
+
 out = []
 for _, r in df.iterrows():
     out.append({
-        'codeBarre': str(r.get('Code barre') or '').strip(),
-        'designation': str(r.get('Standard/Nom') or '').strip(),
-        'condition': r.get('Condition/Condition'),
-        'marque': r.get('Marque'),
-        'specifications': r.get('Spécifications'),
-        'site': str(r.get('Site/Name') or '').strip(),
-        'batiment': str(r.get('Bâtiment/Name') or '').strip(),
-        'niveau': str(r.get('Niveau/Name') or '').strip(),
-        'local': str(r.get('Local/Name') or '').strip(),
-        'direction': r.get('Direction/Name'),
-        'departement': r.get('Département/Name'),
-        'service': r.get('Service/Name'),
+        'codeBarre': str(clean(r.get('Code barre')) or '').strip(),
+        'designation': str(clean(r.get('Standard/Nom')) or '').strip(),
+        'condition': clean(r.get('Condition/Condition')),
+        'marque': clean(r.get('Marque')),
+        'specifications': clean(r.get('Spécifications')),
+        'site': str(clean(r.get('Site/Name')) or '').strip(),
+        'batiment': str(clean(r.get('Bâtiment/Name')) or '').strip(),
+        'niveau': str(clean(r.get('Niveau/Name')) or '').strip(),
+        'local': str(clean(r.get('Local/Name')) or '').strip(),
+        'direction': clean(r.get('Direction/Name')),
+        'departement': clean(r.get('Département/Name')),
+        'service': clean(r.get('Service/Name')),
     })
-print(json.dumps(out, ensure_ascii=False))
+print(json.dumps(out, ensure_ascii=False, allow_nan=False))
 " 2>/dev/null`,
     { maxBuffer: 64 * 1024 * 1024 }
   ).toString();
