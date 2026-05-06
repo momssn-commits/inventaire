@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { MovementsChart } from '@/components/charts/MovementsChart';
 import { StockValueChart } from '@/components/charts/StockValueChart';
 import { ApiLiveWidget } from '@/components/ApiLiveWidget';
+import { LiveSearch } from '@/components/LiveSearch';
 import { getStockByProduct } from '@/lib/stock';
 
 export const dynamic = 'force-dynamic';
@@ -105,8 +106,13 @@ export default async function DashboardPage() {
         }
       />
 
-      <div className="mb-6">
-        <ApiLiveWidget />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-2">
+          <ApiLiveWidget />
+        </div>
+        <div>
+          <LiveSearch />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">

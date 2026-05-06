@@ -1,72 +1,69 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Activity, Server, AlertTriangle, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Activity, Server, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import { formatMoney, formatNumber } from '@/lib/format';
+import { api, ApiError } from '@/lib/api-client';
 
-type Stats = {
-  counters: {
-    products: number;
-    warehouses: number;
-    partners: number;
-    lots: number;
-    pickingsOpen: number;
-    pickingsDone: number;
-    qualityOpen: number;
-    mosOpen: number;
-  };
-  stock: { units: number; value: number };
-};
+const REFRESH_MS = 30000;
 
 /**
  * Widget client-side qui démontre la connexion front ↔ back :
- * récupère /api/v1/stats via fetch HTTP (donc passe par l'API REST réelle).
+ * appelle GET /api/v1/stats via fetch HTTP, refresh auto toutes les 30 s.
  */
 export function ApiLiveWidget() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<Awaited<ReturnType<typeof api.stats>>['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
-  const [refreshTick, setRefreshTick] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  async function load() {
+    setRefreshing(true);
+    const start = performance.now();
+    try {
+      const result = await api.stats();
+      setStats(result.data);
+      setError(null);
+      setLatency(Math.round(performance.now() - start));
+      setLastUpdate(new Date());
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Erreur réseau');
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    const start = performance.now();
-    fetch('/api/v1/stats', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((j) => {
-        if (cancelled) return;
-        if (j.error) {
-          setError(j.error.message ?? 'Erreur inconnue');
-        } else {
-          setStats(j.data);
-          setError(null);
-        }
-        setLatency(Math.round(performance.now() - start));
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setError(e.message);
-      });
+    load();
+    intervalRef.current = setInterval(load, REFRESH_MS);
     return () => {
-      cancelled = true;
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [refreshTick]);
+  }, []);
 
   return (
     <div className="card p-5 border-l-4 border-l-brand-500">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         <Server className="size-4 text-brand-600" />
         <h3 className="font-semibold">Connexion front ↔ API REST v1</h3>
-        <span className="ml-auto flex items-center gap-2">
+        <span className="ml-auto flex items-center gap-2 flex-wrap">
           {error ? (
             <>
               <AlertTriangle className="size-3 text-red-600" />
-              <span className="text-xs text-red-600">erreur</span>
+              <span className="text-xs text-red-600">{error}</span>
             </>
           ) : stats ? (
             <>
-              <Activity className="size-3 text-emerald-600" />
-              <span className="text-xs text-emerald-600">{latency} ms</span>
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-emerald-700 dark:text-emerald-400">en ligne</span>
+              <span className="text-xs text-zinc-500 tabular-nums">{latency} ms</span>
+              {lastUpdate && (
+                <span className="text-xs text-zinc-400 tabular-nums">
+                  · {lastUpdate.toLocaleTimeString('fr-FR')}
+                </span>
+              )}
             </>
           ) : (
             <>
@@ -74,12 +71,21 @@ export function ApiLiveWidget() {
               <span className="text-xs text-zinc-500">chargement…</span>
             </>
           )}
+          <button
+            onClick={load}
+            disabled={refreshing}
+            className="btn-ghost p-1"
+            title="Rafraîchir maintenant"
+          >
+            <RefreshCw className={`size-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
         </span>
       </div>
 
       <p className="text-xs text-zinc-500 mb-4">
-        Ce panneau est rempli côté client par un appel HTTP à <code className="font-mono">GET /api/v1/stats</code> —
-        la même API qu'un client externe utiliserait.
+        Données rafraîchies automatiquement toutes les {REFRESH_MS / 1000}s via{' '}
+        <code className="font-mono text-[11px]">GET /api/v1/stats</code> — la même
+        API qu'un client externe utiliserait.
       </p>
 
       {error && (
@@ -123,15 +129,12 @@ export function ApiLiveWidget() {
         </div>
       )}
 
-      <div className="mt-3 flex items-center gap-2 text-xs">
-        <button
-          onClick={() => setRefreshTick((t) => t + 1)}
-          className="btn-ghost text-xs px-2 py-1"
-        >
-          ↻ Actualiser
-        </button>
+      <div className="mt-3 flex items-center gap-3 text-xs">
         <a href="/api/docs" target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
           Documentation API ↗
+        </a>
+        <a href="/api/v1/openapi.json" target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+          OpenAPI spec ↗
         </a>
       </div>
     </div>

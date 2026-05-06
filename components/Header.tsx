@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Bell, Search, Sun, Moon, LogOut, Menu, ChevronDown } from 'lucide-react';
+import { ConnectionStatus } from './ConnectionStatus';
 
 export function Header({ user }: { user: { name: string; email: string; role: string } }) {
   // Initial state à `null` pour éviter le mismatch d'hydratation : on lit la classe
@@ -37,6 +38,8 @@ export function Header({ user }: { user: { name: string; email: string; role: st
           <kbd className="hidden sm:inline absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 text-zinc-500">⌘K</kbd>
         </div>
       </div>
+
+      <ConnectionStatus />
 
       <button className="btn-ghost p-2" aria-label="Notifications">
         <Bell className="size-5" />
