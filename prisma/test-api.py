@@ -185,8 +185,23 @@ ts("partner créé visible", body["meta"]["total"] >= 1, str(body["meta"]["total
 print("\n=== 10. MOUVEMENTS ===")
 t("GET /pickings", 200, req("GET", "/pickings", token=TOKEN)[0])
 
-# 11. ISOLATION MULTI-TENANT
-print("\n=== 11. ISOLATION MULTI-TENANT ===")
+# 11. MODULE STOCK
+print("\n=== 11. MODULE STOCK ===")
+status, body = req("GET", "/stock/alerts", token=TOKEN)
+t("GET /stock/alerts", 200, status)
+ts("alerts.summary présent", "summary" in body["data"])
+
+status, body = req("GET", "/stock/abc", token=TOKEN)
+t("GET /stock/abc", 200, status)
+ts("abc.summary.totalProducts", body["data"]["summary"]["totalProducts"] >= 0)
+ts("abc.items[].abc dans A/B/C", all(x["abc"] in ("A", "B", "C") for x in body["data"]["items"]))
+
+t("POST /stock/transfer (validation)", 422, req("POST", "/stock/transfer", {}, token=TOKEN)[0])
+t("POST /stock/transfer (qty=0)", 422, req("POST", "/stock/transfer", {"productId": "x", "fromLocationId": "y", "toLocationId": "z", "qty": 0}, token=TOKEN)[0])
+t("POST /stock/transfer (produit inconnu)", 404, req("POST", "/stock/transfer", {"productId": "uuid-inexistant", "fromLocationId": "x", "toLocationId": "y", "qty": 1}, token=TOKEN)[0])
+
+# 12. ISOLATION MULTI-TENANT
+print("\n=== 12. ISOLATION MULTI-TENANT ===")
 status, p = req("GET", "/products?per_page=1", token=TOKEN)
 ts("companyId attendu", p["data"][0]["companyId"] == "00000000-0000-0000-0000-00000000c0de", p["data"][0]["companyId"])
 

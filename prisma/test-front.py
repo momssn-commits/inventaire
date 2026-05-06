@@ -86,6 +86,11 @@ pages = [
     ("/tracabilite", ["Traçabilité"]),
     ("/partenaires", ["Partenaires"]),
     ("/parametres", ["Paramètres", "API REST v1"]),
+    # Module Stock
+    ("/stock", ["Gestion de stock", "Valeur totale"]),
+    ("/stock/alertes", ["Alertes stock", "Ruptures"]),
+    ("/stock/transfert", ["Transfert rapide", "Nouveau transfert"]),
+    ("/stock/abc", ["Analyse ABC"]),
 ]
 for path, expected in pages:
     fetch(path, 200, expect_contains=expected)

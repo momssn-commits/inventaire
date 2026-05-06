@@ -248,7 +248,52 @@ const spec = {
           { name: 'location_id', in: 'query', schema: { type: 'string' } },
           { name: 'warehouse_id', in: 'query', schema: { type: 'string' } },
           { name: 'only_internal', in: 'query', schema: { type: 'boolean' } },
+          { name: 'only_positive', in: 'query', schema: { type: 'boolean' } },
         ],
+      },
+    },
+    '/stock/transfer': {
+      post: {
+        tags: ['Stock'],
+        summary: 'Transfert atomique entre deux emplacements',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['productId', 'fromLocationId', 'toLocationId', 'qty'],
+                properties: {
+                  productId: { type: 'string' },
+                  fromLocationId: { type: 'string' },
+                  toLocationId: { type: 'string' },
+                  qty: { type: 'number', minimum: 0.01 },
+                  lotId: { type: 'string', nullable: true },
+                  notes: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Transfert effectué (Picking interne créé)' },
+          '404': { description: 'Produit introuvable' },
+          '422': { description: 'Stock insuffisant ou validation' },
+        },
+      },
+    },
+    '/stock/alerts': {
+      get: {
+        tags: ['Stock'],
+        summary: 'Alertes stock (rupture, sous-seuil, sur-stock, vieillissement)',
+        responses: { '200': { description: 'OK' } },
+      },
+    },
+    '/stock/abc': {
+      get: {
+        tags: ['Stock'],
+        summary: 'Classification ABC (Pareto) par valeur cumulée',
+        responses: { '200': { description: 'OK' } },
       },
     },
     '/scan': {

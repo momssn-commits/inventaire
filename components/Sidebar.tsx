@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, Warehouse, MapPin, ArrowLeftRight, Truck, ShoppingCart,
   Factory, ShieldCheck, ClipboardList, BarChart3, ScanLine, Wrench, RotateCcw,
-  Users, Settings, Boxes, History, RefreshCw, Smartphone,
+  Users, Settings, Boxes, History, RefreshCw, Smartphone, BoxesIcon, Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -25,6 +25,15 @@ const groups: Group[] = [
       { href: '/entrepots', label: 'Entrepôts', icon: Warehouse, module: 'M2' },
       { href: '/emplacements', label: 'Emplacements', icon: MapPin, module: 'M2' },
       { href: '/partenaires', label: 'Partenaires', icon: Users },
+    ],
+  },
+  {
+    label: 'Stock',
+    items: [
+      { href: '/stock', label: 'Vue globale', icon: Layers, module: 'Stock' },
+      { href: '/stock/alertes', label: 'Alertes', icon: ShieldCheck, module: 'Stock' },
+      { href: '/stock/transfert', label: 'Transfert rapide', icon: ArrowLeftRight, module: 'Stock' },
+      { href: '/stock/abc', label: 'Analyse ABC', icon: BarChart3, module: 'Stock' },
     ],
   },
   {
