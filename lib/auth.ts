@@ -44,9 +44,14 @@ export async function verifySessionToken(token: string): Promise<Session | null>
 
 export async function setSessionCookie(token: string) {
   const c = await cookies();
+  // `secure: true` exigerait HTTPS — en HTTP le navigateur refuse d'envoyer
+  // le cookie aux requêtes suivantes, l'utilisateur est éjecté à chaque clic.
+  // On opt-in via la variable d'env COOKIE_SECURE quand l'app est derrière un
+  // reverse-proxy HTTPS.
+  const secure = process.env.COOKIE_SECURE === 'true';
   c.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
