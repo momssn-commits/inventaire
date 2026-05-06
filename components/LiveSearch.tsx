@@ -38,9 +38,12 @@ export function LiveSearch() {
           api.products.list({ q: query.trim(), per_page: 5 }),
           isBarcode ? api.scan(query.trim()).catch(() => null) : Promise.resolve(null),
         ]);
+        const matches: ScanMatch[] = (scanResult?.data?.matches ?? [])
+          .filter((m: any) => m.type === 'product' || m.type === 'lot' || m.type === 'location')
+          .map((m: any) => ({ type: m.type as ScanMatch['type'], data: m.data }));
         setResults({
           products: productsResult.data,
-          matches: scanResult?.data?.matches ?? [],
+          matches,
         });
         setLatency(Math.round(performance.now() - start));
       } catch (e) {
