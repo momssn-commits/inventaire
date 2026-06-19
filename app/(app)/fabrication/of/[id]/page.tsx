@@ -12,10 +12,10 @@ export const dynamic = 'force-dynamic';
 
 async function startMO(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const moId = String(formData.get('moId') ?? '');
-  await prisma.manufacturingOrder.update({
-    where: { id: moId },
+  await prisma.manufacturingOrder.updateMany({
+    where: { id: moId, companyId: session.companyId },
     data: { state: 'in_progress', startedAt: new Date() },
   });
   redirect(`/fabrication/of/${moId}`);
@@ -142,10 +142,10 @@ async function completeMO(formData: FormData) {
 }
 
 export default async function MOPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSession();
+  const session = await requireSession();
   const { id } = await params;
   const mo = await prisma.manufacturingOrder.findUnique({
-    where: { id },
+    where: { id, companyId: session.companyId },
     include: {
       product: true,
       workOrders: { include: { workCenter: true }, orderBy: { id: 'asc' } },

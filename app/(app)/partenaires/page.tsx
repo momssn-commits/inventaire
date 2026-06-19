@@ -5,6 +5,9 @@ import { prisma } from '@/lib/db';
 import { requireSession, logAudit } from '@/lib/auth';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { Pagination } from '@/components/Pagination';
+
+const PAGE_SIZE = 50;
 
 export const dynamic = 'force-dynamic';
 
@@ -35,18 +38,35 @@ async function createPartner(formData: FormData) {
 export default async function PartnersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; page?: string }>;
 }) {
   const session = await requireSession();
   const sp = await searchParams;
-  const partners = await prisma.partner.findMany({
-    where: {
-      companyId: session.companyId,
-      deletedAt: null,
-      ...(sp.type ? { type: sp.type } : {}),
-    },
-    orderBy: { name: 'asc' },
-  });
+  const page = Math.max(1, Number(sp.page ?? 1));
+  const where = {
+    companyId: session.companyId,
+    deletedAt: null,
+    ...(sp.type ? { type: sp.type } : {}),
+  };
+
+  const [partners, total] = await Promise.all([
+    prisma.partner.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      take: PAGE_SIZE,
+      skip: (page - 1) * PAGE_SIZE,
+    }),
+    prisma.partner.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (sp.type) params.set('type', sp.type);
+    if (p > 1) params.set('page', String(p));
+    const qs = params.toString();
+    return `/partenaires${qs ? `?${qs}` : ''}`;
+  };
 
   return (
     <div>
@@ -97,6 +117,7 @@ export default async function PartnersPage({
               </table>
             )}
           </div>
+          <Pagination page={page} totalPages={totalPages} buildHref={buildHref} />
         </div>
 
         <div className="card p-5 h-fit">

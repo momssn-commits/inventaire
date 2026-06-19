@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { RotateCcw, Plus } from 'lucide-react';
 import { prisma } from '@/lib/db';
-import { requireSession } from '@/lib/auth';
+import { requireSession, logAudit } from '@/lib/auth';
 import { nextSequence } from '@/lib/sequence';
 import { formatDate, formatMoney } from '@/lib/format';
 import { PageHeader } from '@/components/PageHeader';
@@ -16,7 +16,7 @@ async function createRepair(formData: FormData) {
   const productName = String(formData.get('productName') ?? '').trim();
   if (!productName) redirect('/reparations?error=missing');
   const reference = await nextSequence('REPAIR', 'REP', 5);
-  await prisma.repairOrder.create({
+  const repair = await prisma.repairOrder.create({
     data: {
       reference,
       productName,
@@ -27,20 +27,31 @@ async function createRepair(formData: FormData) {
       companyId: session.companyId,
     },
   });
+  await logAudit({
+    action: 'create', entity: 'repairOrder', entityId: repair.id,
+    newValue: { reference, productName },
+    userId: session.userId, companyId: session.companyId,
+  });
   redirect('/reparations');
 }
 
 async function updateRepair(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const id = String(formData.get('id') ?? '');
   const state = String(formData.get('state') ?? '');
-  await prisma.repairOrder.update({
-    where: { id },
+  // updateMany scopes par companyId via la relation equipment (sécurité multi-tenant)
+  await prisma.repairOrder.updateMany({
+    where: { id, companyId: session.companyId },
     data: {
       state,
       ...(state === 'done' ? { doneAt: new Date() } : {}),
     },
+  });
+  await logAudit({
+    action: 'update', entity: 'repairOrder', entityId: id,
+    newValue: { state },
+    userId: session.userId, companyId: session.companyId,
   });
   redirect('/reparations');
 }

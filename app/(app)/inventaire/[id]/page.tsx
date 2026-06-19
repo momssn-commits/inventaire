@@ -18,7 +18,7 @@ async function saveCount(formData: FormData) {
     where: { id: sheetId },
     include: { lines: true },
   });
-  if (!sheet) redirect('/inventaire?error=notfound');
+  if (!sheet || sheet.companyId !== session.companyId) redirect('/inventaire?error=notfound');
 
   for (const line of sheet.lines) {
     const qty = Number(formData.get(`qty_${line.id}`) ?? line.qtyCounted);
@@ -39,7 +39,7 @@ async function validateCount(formData: FormData) {
     where: { id: sheetId },
     include: { lines: true },
   });
-  if (!sheet) redirect('/inventaire?error=notfound');
+  if (!sheet || sheet.companyId !== session.companyId) redirect('/inventaire?error=notfound');
   if (sheet.state === 'validated') redirect(`/inventaire/${sheetId}`);
 
   // Emplacement d'inventaire (création/recherche)
@@ -95,10 +95,10 @@ async function validateCount(formData: FormData) {
 }
 
 export default async function CountSheetPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSession();
+  const session = await requireSession();
   const { id } = await params;
   const sheet = await prisma.countSheet.findUnique({
-    where: { id },
+    where: { id, companyId: session.companyId },
     include: {
       lines: {
         include: {

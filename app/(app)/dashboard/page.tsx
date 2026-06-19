@@ -63,8 +63,8 @@ export default async function DashboardPage() {
       ]);
       return {
         day: d.toLocaleDateString('fr-FR', { weekday: 'short' }),
-        in: inCount + Math.floor(Math.random() * 6 + 2),
-        out: outCount + Math.floor(Math.random() * 5 + 1),
+        in: inCount,
+        out: outCount,
       };
     })
   );

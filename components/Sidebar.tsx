@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, Warehouse, MapPin, ArrowLeftRight, Truck, ShoppingCart,
   Factory, ShieldCheck, ClipboardList, BarChart3, ScanLine, Wrench, RotateCcw,
-  Users, Settings, Boxes, History, RefreshCw, Smartphone, BoxesIcon, Layers,
+  Users, Settings, Boxes, History, RefreshCw, Smartphone, BoxesIcon, Layers, Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -22,9 +22,15 @@ const groups: Group[] = [
     label: 'Données de référence',
     items: [
       { href: '/produits', label: 'Produits', icon: Package, module: 'M1' },
+      { href: '/partenaires', label: 'Partenaires', icon: Users },
+    ],
+  },
+  {
+    label: 'Entrepôts',
+    items: [
       { href: '/entrepots', label: 'Entrepôts', icon: Warehouse, module: 'M2' },
       { href: '/emplacements', label: 'Emplacements', icon: MapPin, module: 'M2' },
-      { href: '/partenaires', label: 'Partenaires', icon: Users },
+      { href: '/inventaire', label: 'Inventaire cyclique', icon: RefreshCw, module: 'M2' },
     ],
   },
   {
@@ -39,18 +45,22 @@ const groups: Group[] = [
   {
     label: 'Opérations',
     items: [
-      { href: '/operations', label: 'Mouvements', icon: ArrowLeftRight, module: 'M3' },
-      { href: '/inventaire', label: 'Comptages', icon: ClipboardList, module: 'M2' },
-      { href: '/reassort', label: 'Réassort', icon: RefreshCw, module: 'M4' },
-      { href: '/codes-barres', label: 'Mode entrepôt', icon: ScanLine, module: 'M5' },
-      { href: '/qualite', label: 'Qualité', icon: ShieldCheck, module: 'M6' },
+      { href: '/operations', label: 'Mouvements', icon: Truck, module: 'M3' },
+      { href: '/reassort', label: 'Réassort', icon: Zap, module: 'M4' },
+      { href: '/codes-barres', label: 'Codes-barres', icon: ScanLine, module: 'M5' },
     ],
   },
   {
     label: 'Achats & Production',
     items: [
       { href: '/achats', label: 'Achats', icon: ShoppingCart, module: 'M7' },
-      { href: '/fabrication', label: 'Fabrication', icon: Factory, module: 'M8' },
+      { href: '/fabrication', label: 'Production', icon: Factory, module: 'M8' },
+    ],
+  },
+  {
+    label: 'Qualité & Maintenance',
+    items: [
+      { href: '/qualite', label: 'Qualité', icon: ShieldCheck, module: 'M6' },
       { href: '/maintenance', label: 'Maintenance', icon: Wrench, module: 'M9' },
       { href: '/reparations', label: 'Réparations', icon: RotateCcw, module: 'M11' },
     ],

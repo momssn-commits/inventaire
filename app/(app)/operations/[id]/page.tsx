@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 async function addLine(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const pickingId = String(formData.get('pickingId') ?? '');
   const productId = String(formData.get('productId') ?? '');
   const qty = Number(formData.get('qty') ?? 0);
@@ -20,6 +20,8 @@ async function addLine(formData: FormData) {
   const toLocationId = String(formData.get('toLocationId') ?? '') || null;
   const lotName = String(formData.get('lotName') ?? '') || null;
   if (!pickingId || !productId || qty <= 0) redirect(`/operations/${pickingId}`);
+  const pk = await prisma.picking.findUnique({ where: { id: pickingId }, select: { companyId: true } });
+  if (!pk || pk.companyId !== session.companyId) redirect('/operations');
 
   await prisma.pickingLine.create({
     data: {
@@ -32,26 +34,31 @@ async function addLine(formData: FormData) {
 
 async function removeLine(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const lineId = String(formData.get('lineId') ?? '');
   const pickingId = String(formData.get('pickingId') ?? '');
+  const line = await prisma.pickingLine.findUnique({
+    where: { id: lineId },
+    include: { picking: { select: { companyId: true } } },
+  });
+  if (!line || line.picking.companyId !== session.companyId) redirect(`/operations/${pickingId}`);
   await prisma.pickingLine.delete({ where: { id: lineId } });
   redirect(`/operations/${pickingId}`);
 }
 
 async function confirmPicking(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const pickingId = String(formData.get('pickingId') ?? '');
-  await prisma.picking.update({ where: { id: pickingId }, data: { state: 'confirmed' } });
+  await prisma.picking.updateMany({ where: { id: pickingId, companyId: session.companyId }, data: { state: 'confirmed' } });
   redirect(`/operations/${pickingId}`);
 }
 
 async function cancelPicking(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const pickingId = String(formData.get('pickingId') ?? '');
-  await prisma.picking.update({ where: { id: pickingId }, data: { state: 'cancelled' } });
+  await prisma.picking.updateMany({ where: { id: pickingId, companyId: session.companyId }, data: { state: 'cancelled' } });
   redirect(`/operations/${pickingId}`);
 }
 
@@ -61,7 +68,7 @@ async function validatePicking(formData: FormData) {
   const pickingId = String(formData.get('pickingId') ?? '');
 
   const picking = await prisma.picking.findUnique({
-    where: { id: pickingId },
+    where: { id: pickingId, companyId: session.companyId },
     include: { lines: { include: { product: true } } },
   });
   if (!picking) redirect('/operations?error=notfound');
@@ -138,10 +145,10 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export default async function PickingPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSession();
+  const pageSession = await requireSession();
   const { id } = await params;
   const picking = await prisma.picking.findUnique({
-    where: { id },
+    where: { id, companyId: pageSession.companyId },
     include: {
       partner: true,
       fromWarehouse: true,

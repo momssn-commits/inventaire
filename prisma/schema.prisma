@@ -32,6 +32,8 @@ model Company {
   poOrders   PurchaseOrder[]
   mos        ManufacturingOrder[]
   qualityAlerts QualityAlert[]
+  qualityCheckPoints QualityCheckPoint[]
+  countSheets CountSheet[]
   auditLogs  AuditLog[]
   equipments Equipment[]
   repairs    RepairOrder[]
@@ -394,7 +396,12 @@ model CountSheet {
   createdAt   DateTime @default(now())
   notes       String?
 
+  companyId String @default("")
+  company   Company @relation(fields: [companyId], references: [id])
+
   lines CountLine[]
+
+  @@index([companyId])
 }
 
 model CountLine {
@@ -587,7 +594,12 @@ model QualityCheckPoint {
   active       Boolean @default(true)
   createdAt    DateTime @default(now())
 
+  companyId String @default("")
+  company   Company @relation(fields: [companyId], references: [id])
+
   checks QualityCheck[]
+
+  @@index([companyId])
 }
 
 model QualityCheck {

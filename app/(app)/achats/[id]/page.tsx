@@ -18,12 +18,14 @@ async function recalcTotal(poId: string) {
 
 async function addPOLine(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const poId = String(formData.get('poId') ?? '');
   const productId = String(formData.get('productId') ?? '');
   const qty = Number(formData.get('qty') ?? 0);
   const unitPrice = Number(formData.get('unitPrice') ?? 0);
   if (!poId || !productId || qty <= 0) redirect(`/achats/${poId}`);
+  const po = await prisma.purchaseOrder.findUnique({ where: { id: poId }, select: { companyId: true } });
+  if (!po || po.companyId !== session.companyId) redirect('/achats');
   await prisma.purchaseOrderLine.create({
     data: { poId, productId, qty, unitPrice, totalHt: qty * unitPrice },
   });
@@ -33,9 +35,14 @@ async function addPOLine(formData: FormData) {
 
 async function removePOLine(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const lineId = String(formData.get('lineId') ?? '');
   const poId = String(formData.get('poId') ?? '');
+  const line = await prisma.purchaseOrderLine.findUnique({
+    where: { id: lineId },
+    include: { po: { select: { companyId: true } } },
+  });
+  if (!line || line.po.companyId !== session.companyId) redirect(`/achats/${poId}`);
   await prisma.purchaseOrderLine.delete({ where: { id: lineId } });
   await recalcTotal(poId);
   redirect(`/achats/${poId}`);
@@ -43,10 +50,10 @@ async function removePOLine(formData: FormData) {
 
 async function sendPO(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const poId = String(formData.get('poId') ?? '');
-  await prisma.purchaseOrder.update({
-    where: { id: poId },
+  await prisma.purchaseOrder.updateMany({
+    where: { id: poId, companyId: session.companyId },
     data: { state: 'sent', orderedAt: new Date() },
   });
   redirect(`/achats/${poId}`);
@@ -54,10 +61,10 @@ async function sendPO(formData: FormData) {
 
 async function confirmPO(formData: FormData) {
   'use server';
-  await requireSession();
+  const session = await requireSession();
   const poId = String(formData.get('poId') ?? '');
-  await prisma.purchaseOrder.update({
-    where: { id: poId },
+  await prisma.purchaseOrder.updateMany({
+    where: { id: poId, companyId: session.companyId },
     data: { state: 'confirmed' },
   });
   redirect(`/achats/${poId}`);
@@ -68,7 +75,7 @@ async function generateReceipt(formData: FormData) {
   const session = await requireSession();
   const poId = String(formData.get('poId') ?? '');
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id: poId },
+    where: { id: poId, companyId: session.companyId },
     include: { lines: { include: { product: true } }, partner: true },
   });
   if (!po) redirect('/achats?error=notfound');
@@ -114,10 +121,10 @@ async function generateReceipt(formData: FormData) {
 }
 
 export default async function POPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSession();
+  const pageSession = await requireSession();
   const { id } = await params;
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id },
+    where: { id, companyId: pageSession.companyId },
     include: {
       partner: true,
       lines: { include: { product: true } },
