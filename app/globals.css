@@ -39,7 +39,7 @@
     border: 1px solid rgb(var(--border));
   }
   .btn-ghost {
-    @apply btn text-zinc-300 hover:bg-white/8;
+    @apply btn text-zinc-300 hover:bg-white/10;
   }
   .btn-danger {
     @apply btn bg-red-600 hover:bg-red-500 text-white;
