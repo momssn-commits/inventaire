@@ -3,14 +3,14 @@ import './globals.css';
 import { PWARegister } from '@/components/PWARegister';
 
 export const metadata: Metadata = {
-  title: 'Inventaire — Gestion d\'inventaire professionnelle',
+  title: 'Inventaire Pro',
   description: 'Solution complète de gestion d\'inventaire et de chaîne d\'approvisionnement',
   manifest: '/manifest.webmanifest',
-  applicationName: 'Inventaire',
+  applicationName: 'Inventaire Pro',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Inventaire',
+    title: 'Inventaire Pro',
   },
 };
 

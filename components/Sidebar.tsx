@@ -85,19 +85,10 @@ export function Sidebar({ companyName }: { companyName: string }) {
           <Package className="size-4 text-white" />
         </div>
         <div className="min-w-0">
-          <div className="font-bold text-sm text-white leading-tight">Inventaire</div>
+          <div className="font-bold text-sm text-white leading-tight">Inventaire Pro</div>
           <div className="text-[10px] text-zinc-500 truncate">{companyName}</div>
         </div>
       </div>
-
-      {/* Back link */}
-      <Link
-        href="/dashboard"
-        className="flex items-center gap-1.5 mx-3 mt-3 mb-1 px-2 py-1.5 rounded-md text-xs text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition"
-      >
-        <ChevronLeft className="size-3.5" />
-        Retour Workflow
-      </Link>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 pb-4">

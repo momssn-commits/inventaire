@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Package, Warehouse, AlertTriangle, TrendingUp, Truck, Factory, ShieldAlert, Boxes } from 'lucide-react';
+import { Package, Warehouse, AlertTriangle, TrendingUp, Truck, Factory, ShieldAlert, Boxes, Plus, ArrowLeftRight, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
 import { formatMoney, formatNumber } from '@/lib/format';
@@ -8,8 +8,6 @@ import { KpiCard } from '@/components/KpiCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { MovementsChart } from '@/components/charts/MovementsChart';
 import { StockValueChart } from '@/components/charts/StockValueChart';
-import { ApiLiveWidget } from '@/components/ApiLiveWidget';
-import { LiveSearch } from '@/components/LiveSearch';
 import { getStockByProduct } from '@/lib/stock';
 
 export const dynamic = 'force-dynamic';
@@ -97,8 +95,8 @@ export default async function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title={`Bonjour, ${session.name.split(' ')[0]} 👋`}
-        subtitle="Vue d'ensemble de votre activité d'inventaire"
+        title={`Bonjour, ${session.name.split(' ')[0]}`}
+        subtitle="Vue d'ensemble de votre activité"
         actions={
           <Link href="/operations/nouveau" className="btn-primary">
             <Truck className="size-4" /> Nouveau mouvement
@@ -106,13 +104,21 @@ export default async function DashboardPage() {
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div className="lg:col-span-2">
-          <ApiLiveWidget />
-        </div>
-        <div>
-          <LiveSearch />
-        </div>
+      {/* Actions rapides */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {[
+          { href: '/achats/nouveau', icon: Plus, label: 'Bon de commande', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+          { href: '/operations/nouveau', icon: ArrowLeftRight, label: 'Mouvement stock', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+          { href: '/inventaire', icon: ClipboardCheck, label: 'Inventaire cyclique', color: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
+          { href: '/rapports', icon: BarChart3, label: 'Rapports', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+        ].map(({ href, icon: Icon, label, color }) => (
+          <Link key={href} href={href} className={`card border flex flex-col items-center gap-2 p-4 hover:bg-white/5 transition-colors ${color}`}>
+            <div className={`size-9 rounded-lg grid place-items-center ${color}`}>
+              <Icon className="size-5" />
+            </div>
+            <span className="text-sm font-medium text-center leading-tight">{label}</span>
+          </Link>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">

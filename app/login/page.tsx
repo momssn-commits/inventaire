@@ -49,29 +49,56 @@ export default async function LoginPage({
   const { error, next } = await searchParams;
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center mb-6 gap-3">
-          <div className="size-12 rounded-xl bg-brand-600 grid place-items-center text-white shadow-lg shadow-brand-600/30">
-            <Boxes className="size-6" />
+    <div className="min-h-screen flex" style={{ background: 'rgb(var(--bg))' }}>
+      {/* Left panel — branding */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12"
+        style={{ background: 'rgb(10 11 22)', borderRight: '1px solid rgb(30 33 52)' }}>
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-indigo-600 grid place-items-center shadow-lg shadow-indigo-900/50">
+            <Boxes className="size-5 text-white" />
           </div>
-          <div>
-            <h1 className="text-xl font-semibold leading-tight">Inventaire</h1>
-            <p className="text-xs text-zinc-500">Gestion professionnelle</p>
-          </div>
+          <span className="text-lg font-bold text-white">Inventaire Pro</span>
         </div>
+        <div>
+          <blockquote className="text-2xl font-semibold text-white leading-snug mb-4">
+            "Maîtrisez votre stock,<br />pilotez votre activité."
+          </blockquote>
+          <p className="text-sm text-zinc-400">
+            Gestion d'inventaire, achats, fabrication et qualité — tout en un.
+          </p>
+        </div>
+        <div className="flex gap-6 text-xs text-zinc-600">
+          <span>Stocks en temps réel</span>
+          <span>·</span>
+          <span>Traçabilité complète</span>
+          <span>·</span>
+          <span>Multi-entrepôts</span>
+        </div>
+      </div>
 
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold mb-1">Connexion</h2>
-          <p className="text-sm text-zinc-500 mb-5">Accédez à votre espace de gestion d'inventaire.</p>
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
+            <div className="size-10 rounded-xl bg-indigo-600 grid place-items-center">
+              <Boxes className="size-5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-white">Inventaire Pro</span>
+          </div>
+
+          <h1 className="text-2xl font-semibold text-white mb-1">Connexion</h1>
+          <p className="text-sm mb-8" style={{ color: 'rgb(var(--muted))' }}>
+            Accédez à votre espace de gestion.
+          </p>
 
           {error && (
-            <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-3 py-2 text-sm text-red-700 dark:text-red-300">
-              {error === 'missing' ? 'Veuillez renseigner vos identifiants.' : 'Identifiants incorrects.'}
+            <div className="mb-5 rounded-lg bg-red-950/40 border border-red-900/60 px-4 py-3 text-sm text-red-300">
+              {error === 'missing' ? 'Veuillez renseigner vos identifiants.' : 'Identifiants incorrects. Veuillez réessayer.'}
             </div>
           )}
 
-          <form action={login} className="space-y-4">
+          <form action={login} className="space-y-5">
             <input type="hidden" name="next" value={next ?? '/dashboard'} />
             <div>
               <label className="label" htmlFor="email">Adresse e-mail</label>
@@ -81,8 +108,8 @@ export default async function LoginPage({
                 type="email"
                 autoComplete="email"
                 required
+                placeholder="vous@exemple.com"
                 className="input"
-                defaultValue="admin@inventaire.fr"
               />
             </div>
             <div>
@@ -93,27 +120,19 @@ export default async function LoginPage({
                 type="password"
                 autoComplete="current-password"
                 required
+                placeholder="••••••••"
                 className="input"
-                defaultValue="admin123"
               />
             </div>
-            <button type="submit" className="btn-primary w-full">Se connecter</button>
+            <button type="submit" className="btn-primary w-full py-2.5 text-base">
+              Se connecter
+            </button>
           </form>
 
-          <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-            <p className="text-xs text-zinc-500 mb-2">Compte administrateur initial :</p>
-            <ul className="text-xs space-y-1 text-zinc-600 dark:text-zinc-400">
-              <li>• <code className="text-[11px]">admin@inventaire.fr</code> / admin123</li>
-            </ul>
-            <p className="text-[11px] text-zinc-400 mt-2 italic">
-              Pensez à modifier le mot de passe après la première connexion.
-            </p>
-          </div>
+          <p className="text-center text-xs mt-8" style={{ color: 'rgb(var(--muted))' }}>
+            © {new Date().getFullYear()} Inventaire Pro — Tous droits réservés
+          </p>
         </div>
-
-        <p className="text-center text-xs text-zinc-500 mt-6">
-          © {new Date().getFullYear()} Inventaire — CDC-INVENTAIRE-V1.0
-        </p>
       </div>
     </div>
   );

@@ -70,7 +70,13 @@
     color: rgb(var(--fg));
   }
   .table-base tbody tr:hover {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.04);
+  }
+  .table-base tbody tr {
+    transition: background 0.1s;
+  }
+  .table-base tbody tr:last-child td {
+    border-bottom: none;
   }
   .text-muted {
     color: rgb(var(--muted));
