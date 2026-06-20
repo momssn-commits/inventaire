@@ -623,6 +623,7 @@ model QualityAlert {
   severity    String  @default("medium") // low, medium, high, critical
   productId   String?
   partnerId   String?
+  assignedTo  String? // nom libre de la personne responsable
   createdAt   DateTime @default(now())
   resolvedAt  DateTime?
 

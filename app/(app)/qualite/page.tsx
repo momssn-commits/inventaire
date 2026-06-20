@@ -25,6 +25,7 @@ async function createAlert(formData: FormData) {
       severity: String(formData.get('severity') ?? 'medium'),
       productId: String(formData.get('productId') ?? '') || null,
       partnerId: String(formData.get('partnerId') ?? '') || null,
+      assignedTo: String(formData.get('assignedTo') ?? '') || null,
       companyId: session.companyId,
     },
   });
@@ -57,21 +58,23 @@ async function createCheckPoint(formData: FormData) {
   redirect('/qualite');
 }
 
-async function updateAlertState(formData: FormData) {
+async function updateAlert(formData: FormData) {
   'use server';
   const session = await requireSession();
   const id = String(formData.get('id') ?? '');
   const state = String(formData.get('state') ?? '');
+  const assignedTo = String(formData.get('assignedTo') ?? '') || null;
   await prisma.qualityAlert.updateMany({
     where: { id, companyId: session.companyId },
     data: {
       state,
+      assignedTo,
       ...(state === 'resolved' ? { resolvedAt: new Date() } : {}),
     },
   });
   await logAudit({
     action: 'update', entity: 'qualityAlert', entityId: id,
-    newValue: { state },
+    newValue: { state, assignedTo },
     userId: session.userId, companyId: session.companyId,
   });
   redirect('/qualite');
@@ -189,6 +192,7 @@ export default async function QualityPage({
                       <th>Titre</th>
                       <th>Sévérité</th>
                       <th>Statut</th>
+                      <th>Assigné à</th>
                       <th>Créé le</th>
                       <th>Résolu le</th>
                       <th>Action</th>
@@ -198,22 +202,33 @@ export default async function QualityPage({
                     {alerts.map((a) => (
                       <tr key={a.id}>
                         <td className="font-mono text-xs">{a.reference}</td>
-                        <td>{a.title}</td>
+                        <td className="max-w-[200px]">
+                          <div className="font-medium text-sm truncate">{a.title}</div>
+                        </td>
                         <td><StatusBadge value={a.severity} /></td>
                         <td><StatusBadge value={a.state} /></td>
+                        <td className="text-sm">{(a as any).assignedTo ?? '—'}</td>
                         <td className="text-sm">{formatDate(a.createdAt)}</td>
                         <td className="text-sm">{a.resolvedAt ? formatDate(a.resolvedAt) : '—'}</td>
                         <td>
                           {a.state !== 'resolved' && (
-                            <form action={updateAlertState} className="flex items-center gap-1">
+                            <form action={updateAlert} className="flex flex-col gap-1 min-w-[180px]">
                               <input type="hidden" name="id" value={a.id} />
-                              <select name="state" defaultValue={a.state} className="input text-xs py-1">
-                                <option value="new">Nouveau</option>
-                                <option value="in_progress">En cours</option>
-                                <option value="action">Action engagée</option>
-                                <option value="resolved">Résolu</option>
-                              </select>
-                              <button type="submit" className="btn-secondary text-xs">MAJ</button>
+                              <input
+                                name="assignedTo"
+                                defaultValue={(a as any).assignedTo ?? ''}
+                                placeholder="Responsable…"
+                                className="input text-xs py-1"
+                              />
+                              <div className="flex gap-1">
+                                <select name="state" defaultValue={a.state} className="input text-xs py-1 flex-1">
+                                  <option value="new">Nouveau</option>
+                                  <option value="in_progress">En cours</option>
+                                  <option value="action">Action engagée</option>
+                                  <option value="resolved">Résolu</option>
+                                </select>
+                                <button type="submit" className="btn-secondary text-xs px-2">✓</button>
+                              </div>
                             </form>
                           )}
                         </td>
@@ -298,6 +313,10 @@ export default async function QualityPage({
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="label">Assigner à</label>
+                <input name="assignedTo" placeholder="Nom du responsable" className="input" />
               </div>
               <button type="submit" className="btn-primary w-full">Créer l'alerte</button>
             </form>

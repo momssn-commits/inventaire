@@ -176,9 +176,9 @@ export default async function StockPage({
             Stocks positifs uniquement
           </label>
           <button type="submit" className="btn-secondary"><Filter className="size-4" /> Filtrer</button>
-          <button type="button" className="btn-ghost" disabled>
+          <a href="/api/export/stock" className="btn-secondary">
             <Download className="size-4" /> Export CSV
-          </button>
+          </a>
         </form>
       </div>
 

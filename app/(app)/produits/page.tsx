@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Package, Plus, Filter, Download, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Plus, Filter, Download, Upload, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
 import { formatMoney, formatNumber } from '@/lib/format';
@@ -70,7 +70,8 @@ export default async function ProductsPage({
         module="M1"
         actions={
           <>
-            <button className="btn-secondary"><Download className="size-4" /> Exporter</button>
+            <a href="/api/export/produits" className="btn-secondary"><Download className="size-4" /> Exporter CSV</a>
+            <Link href="/produits/import" className="btn-secondary"><Upload className="size-4" /> Importer</Link>
             <Link href="/produits/nouveau" className="btn-primary"><Plus className="size-4" /> Nouveau produit</Link>
           </>
         }

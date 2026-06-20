@@ -58,7 +58,7 @@ const groups: Group[] = [
   {
     label: 'Production',
     items: [
-      { href: '/fabrication', label: 'Nomenclatures',       icon: ClipboardList,   badge: 'bg-zinc-500' },
+      { href: '/fabrication/bom', label: 'Nomenclatures',  icon: ClipboardList,   badge: 'bg-zinc-500' },
       { href: '/fabrication', label: 'Fabrication',         icon: Factory,         badge: 'bg-zinc-600' },
     ],
   },
