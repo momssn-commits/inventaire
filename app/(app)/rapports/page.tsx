@@ -100,7 +100,7 @@ export default async function ReportsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { href: '#stock', icon: Package, label: 'État des stocks', desc: 'Quantités par produit, emplacement, lot' },
+          { href: '#stock', icon: Package, label: 'État des stocks', desc: 'Quantités par produit, local, lot' },
           { href: '#movements', icon: History, label: 'Historique mouvements', desc: 'Trace exhaustive entrées/sorties' },
           { href: '#aging', icon: TrendingUp, label: 'Vieillissement stock', desc: 'Répartition par tranches d\'ancienneté' },
           { href: '/tracabilite', icon: FileText, label: 'Traçabilité', desc: 'Suivi ascendant/descendant lots & SN' },

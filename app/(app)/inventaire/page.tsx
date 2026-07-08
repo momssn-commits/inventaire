@@ -100,7 +100,7 @@ export default async function CountsPage({
 
       {sp.error === 'missing' && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
-          Veuillez sélectionner un local.
+          Veuillez sélectionner un site.
         </div>
       )}
 
@@ -205,7 +205,7 @@ export default async function CountsPage({
             </p>
             <form action={createCountSheet} className="space-y-3">
               <div>
-                <label className="label">Local à compter *</label>
+                <label className="label">Site à compter *</label>
                 <select name="warehouseId" required className="input" defaultValue={sp.wh ?? ''}>
                   <option value="">— Sélectionner —</option>
                   {warehouses.map((w) => (
@@ -223,7 +223,7 @@ export default async function CountsPage({
           <div className="card p-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
             <p className="font-medium text-zinc-700 dark:text-zinc-300">Comment ça fonctionne ?</p>
             <ol className="space-y-1.5 text-xs list-decimal list-inside">
-              <li>Sélectionner l&apos;local à inventorier</li>
+              <li>Sélectionner le site à inventorier</li>
               <li>Le stock théorique est chargé automatiquement</li>
               <li>L&apos;opérateur saisit les quantités réellement comptées</li>
               <li>Les écarts sont calculés automatiquement</li>

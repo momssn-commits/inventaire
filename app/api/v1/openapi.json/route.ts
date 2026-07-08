@@ -208,9 +208,9 @@ const spec = {
       delete: { tags: ['Produits'], summary: 'Soft-delete' },
     },
     '/warehouses': {
-      get: { tags: ['Locaux'], summary: 'Liste des locaux' },
+      get: { tags: ['Sites'], summary: 'Liste des sites' },
       post: {
-        tags: ['Locaux'], summary: 'Créer un local',
+        tags: ['Sites'], summary: 'Créer un site',
         requestBody: {
           required: true,
           content: {
@@ -223,11 +223,11 @@ const spec = {
     },
     '/warehouses/{id}': {
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-      get: { tags: ['Locaux'], summary: 'Détail local + emplacements' },
+      get: { tags: ['Sites'], summary: 'Détail site + locaux' },
     },
     '/locations': {
-      get: { tags: ['Emplacements'], summary: 'Liste des emplacements' },
-      post: { tags: ['Emplacements'], summary: 'Créer un emplacement' },
+      get: { tags: ['Locaux'], summary: 'Liste des locaux' },
+      post: { tags: ['Locaux'], summary: 'Créer un local' },
     },
     '/lots': {
       get: { tags: ['Lots / N° série'], summary: 'Recherche de lots' },
@@ -255,7 +255,7 @@ const spec = {
     '/stock/transfer': {
       post: {
         tags: ['Stock'],
-        summary: 'Transfert atomique entre deux emplacements',
+        summary: 'Transfert atomique entre deux locaux',
         requestBody: {
           required: true,
           content: {
@@ -340,8 +340,8 @@ const spec = {
     { name: 'Authentification' },
     { name: 'Tableau de bord' },
     { name: 'Produits' },
+    { name: 'Sites' },
     { name: 'Locaux' },
-    { name: 'Emplacements' },
     { name: 'Lots / N° série' },
     { name: 'Partenaires' },
     { name: 'Stock' },

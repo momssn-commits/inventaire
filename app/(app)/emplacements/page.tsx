@@ -89,11 +89,11 @@ export default async function LocationsPage({
   return (
     <div>
       <PageHeader
-        title="Emplacements"
+        title="Locaux"
         subtitle={
           selectedWarehouse
-            ? `${selectedWarehouse.name} — ${locations.length} emplacement${locations.length !== 1 ? 's' : ''}`
-            : `${locations.length} emplacement${locations.length !== 1 ? 's' : ''} au total`
+            ? `${selectedWarehouse.name} — ${locations.length} loca${locations.length !== 1 ? 'ux' : 'l'}`
+            : `${locations.length} loca${locations.length !== 1 ? 'ux' : 'l'} au total`
         }
         module="M2"
       />
@@ -104,9 +104,9 @@ export default async function LocationsPage({
           <div className="card p-4">
             <form className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[180px]">
-                <label className="label">Local</label>
+                <label className="label">Site</label>
                 <select name="wh" defaultValue={sp.wh ?? ''} className="input">
-                  <option value="">Tous les locaux</option>
+                  <option value="">Tous les sites</option>
                   {warehouses.map((w) => (
                     <option key={w.id} value={w.id}>{w.name} ({w.code})</option>
                   ))}
@@ -148,7 +148,7 @@ export default async function LocationsPage({
             {locations.length === 0 ? (
               <div className="p-12 text-center">
                 <MapPin className="size-10 mx-auto text-zinc-300 dark:text-zinc-700 mb-3" />
-                <p className="text-zinc-500">Aucun emplacement trouvé.</p>
+                <p className="text-zinc-500">Aucun local trouvé.</p>
               </div>
             ) : (
               <table className="table-base">
@@ -156,7 +156,7 @@ export default async function LocationsPage({
                   <tr>
                     <th>Chemin complet</th>
                     <th>Type</th>
-                    <th>Local</th>
+                    <th>Site</th>
                     <th>Code-barres</th>
                     <th className="text-right">Lignes stock</th>
                     <th className="text-right">Sous-empl.</th>
@@ -223,7 +223,7 @@ export default async function LocationsPage({
           <div className="card p-5">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Plus className="size-4" />
-              Nouvel emplacement
+              Nouveau local
             </h3>
             <form action={createLocation} className="space-y-3">
               <div>
@@ -231,7 +231,7 @@ export default async function LocationsPage({
                 <input name="name" required className="input" placeholder="Casier-A7" />
               </div>
               <div>
-                <label className="label">Local</label>
+                <label className="label">Site</label>
                 <select name="warehouseId" className="input" defaultValue={sp.wh ?? ''}>
                   <option value="">— Virtuel —</option>
                   {warehouses.map((w) => (
@@ -240,7 +240,7 @@ export default async function LocationsPage({
                 </select>
               </div>
               <div>
-                <label className="label">Emplacement parent</label>
+                <label className="label">Local parent</label>
                 <select name="parentId" className="input" defaultValue="">
                   <option value="">— Racine —</option>
                   {locations
@@ -262,13 +262,13 @@ export default async function LocationsPage({
                 <label className="label">Code-barres (optionnel)</label>
                 <input name="barcode" className="input" placeholder="LOC-..." />
               </div>
-              <button type="submit" className="btn-primary w-full">Créer l&apos;emplacement</button>
+              <button type="submit" className="btn-primary w-full">Créer le local</button>
             </form>
           </div>
 
           {/* Légende des types */}
           <div className="card p-4">
-            <p className="text-xs font-medium text-zinc-500 mb-2 uppercase tracking-wide">Types d&apos;emplacements</p>
+            <p className="text-xs font-medium text-zinc-500 mb-2 uppercase tracking-wide">Types de locaux</p>
             <div className="space-y-1.5">
               {Object.entries(TYPE_LABELS).map(([k, v]) => (
                 <div key={k} className="flex items-center gap-2">

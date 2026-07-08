@@ -214,8 +214,8 @@ export default async function TracabilitePage({
               <table className="table-base">
                 <thead>
                   <tr>
+                    <th>Site</th>
                     <th>Local</th>
-                    <th>Emplacement</th>
                     <th className="text-right">Quantité</th>
                   </tr>
                 </thead>

@@ -140,7 +140,7 @@ export default async function StockPage({
           tone="default"
         />
         <KpiCard
-          label="Emplacements occupés"
+          label="Locaux occupés"
           value={agg.distinctLocations}
           icon={MapPin}
           tone="default"
@@ -154,7 +154,7 @@ export default async function StockPage({
             <input name="q" defaultValue={sp.q ?? ''} placeholder="SKU, nom de produit…" className="input" />
           </div>
           <div className="min-w-[180px]">
-            <label className="label">Local</label>
+            <label className="label">Site</label>
             <select name="warehouse" defaultValue={sp.warehouse ?? ''} className="input">
               <option value="">Tous</option>
               {warehouses.map((w) => (
@@ -195,8 +195,8 @@ export default async function StockPage({
               <tr>
                 <th>SKU</th>
                 <th>Produit</th>
+                <th>Site</th>
                 <th>Local</th>
-                <th>Emplacement</th>
                 <th>Lot / N° série</th>
                 <th>État</th>
                 <th className="text-right">Quantité</th>

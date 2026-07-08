@@ -42,7 +42,7 @@ async function validateCount(formData: FormData) {
   if (!sheet || sheet.companyId !== session.companyId) redirect('/inventaire?error=notfound');
   if (sheet.state === 'validated') redirect(`/inventaire/${sheetId}`);
 
-  // Emplacement d'inventaire (création/recherche)
+  // Local d'inventaire (création/recherche)
   let invLoc = await prisma.location.findFirst({ where: { type: 'inventory' } });
   if (!invLoc) {
     invLoc = await prisma.location.create({
@@ -141,7 +141,7 @@ export default async function CountSheetPage({ params }: { params: Promise<{ id:
             <thead>
               <tr>
                 <th>Produit</th>
-                <th>Emplacement</th>
+                <th>Local</th>
                 <th>Lot</th>
                 <th className="text-right">Théorique</th>
                 <th className="text-right">Compté</th>

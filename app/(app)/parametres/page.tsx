@@ -176,7 +176,7 @@ export default async function SettingsPage() {
           </div>
           <ul className="text-sm space-y-1.5">
             <li>✅ M1 — Gestion des produits (variantes, lots, SN, valorisation)</li>
-            <li>✅ M2 — Multi-locaux, emplacements arborescents, comptages</li>
+            <li>✅ M2 — Multi-sites, locaux arborescents, comptages</li>
             <li>✅ M3 — Réception/expédition, transferts, mouvements atomiques</li>
             <li>✅ M4 — Réassort min/max + génération PO automatique</li>
             <li>✅ M5 — Codes-barres GS1 (AI 01, 10, 17, 21, 30) + scan caméra</li>
@@ -187,7 +187,7 @@ export default async function SettingsPage() {
             <li>✅ M11 — Réparations</li>
             <li>✅ M12 — Tableaux de bord, rapports, traçabilité</li>
             <li>✅ Multi-tenant, audit-trail, soft-delete</li>
-            <li>✅ PWA installable, mode local mobile</li>
+            <li>✅ PWA installable, mode site mobile</li>
           </ul>
         </div>
       </div>

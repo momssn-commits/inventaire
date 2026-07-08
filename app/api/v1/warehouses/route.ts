@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         companyId: auth.session.companyId,
       },
     });
-    // Création des emplacements par défaut
+    // Création des locaux par défaut
     await prisma.location.createMany({
       data: [
         { name: 'Stock', fullPath: `${wh.code}/Stock`, type: 'view', warehouseId: wh.id },
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     });
     return apiOk(wh, { status: 201 });
   } catch (e: any) {
-    if (e.code === 'P2002') return apiError('conflict', 'Code d\'local déjà utilisé.', 409);
+    if (e.code === 'P2002') return apiError('conflict', 'Code d\'site déjà utilisé.', 409);
     return apiError('server_error', e.message, 500);
   }
 }

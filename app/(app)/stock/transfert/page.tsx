@@ -106,7 +106,7 @@ export default async function TransfertPage({
     <div>
       <PageHeader
         title="Transfert rapide de stock"
-        subtitle="Déplacer du stock d'un emplacement à un autre (mouvement atomique)"
+        subtitle="Déplacer du stock d'un local à un autre (mouvement atomique)"
         module="Stock"
         actions={<Link href="/stock" className="btn-secondary"><ArrowLeft className="size-4" /> Retour</Link>}
       />
@@ -144,7 +144,7 @@ export default async function TransfertPage({
               </select>
             </div>
             <div>
-              <label className="label">Emplacement source *</label>
+              <label className="label">Local source *</label>
               <select name="fromLocationId" required className="input">
                 <option value="">— Source —</option>
                 {locations.map((l) => (
@@ -155,7 +155,7 @@ export default async function TransfertPage({
               </select>
             </div>
             <div>
-              <label className="label">Emplacement destination *</label>
+              <label className="label">Local destination *</label>
               <select name="toLocationId" required className="input">
                 <option value="">— Destination —</option>
                 {locations.map((l) => (

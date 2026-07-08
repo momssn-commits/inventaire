@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   const decoded = parseGS1(body.code);
   const candidates: { type: string; data: any }[] = [];
 
-  // 1. Recherche d'un emplacement par code-barres
+  // 1. Recherche d'un local par code-barres
   const loc = await prisma.location.findFirst({
     where: { barcode: body.code },
     include: { warehouse: true },

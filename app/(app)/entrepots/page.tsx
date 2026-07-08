@@ -77,7 +77,7 @@ export default async function WarehousesPage({
   return (
     <div>
       <PageHeader
-        title="Locaux"
+        title="Sites"
         subtitle={`${warehouses.length} site${warehouses.length !== 1 ? 's' : ''} de stockage`}
         module="M2"
       />
@@ -89,12 +89,12 @@ export default async function WarehousesPage({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Liste des locaux */}
+        {/* Liste des sites */}
         <div className="lg:col-span-2 space-y-4">
           {warehouses.length === 0 ? (
             <div className="card p-12 text-center">
               <Warehouse className="size-12 mx-auto text-zinc-300 dark:text-zinc-700 mb-3" />
-              <p className="font-medium text-zinc-600 dark:text-zinc-400">Aucun local</p>
+              <p className="font-medium text-zinc-600 dark:text-zinc-400">Aucun site</p>
               <p className="text-sm text-zinc-400 mt-1">Créez votre premier site de stockage.</p>
             </div>
           ) : (
@@ -128,14 +128,14 @@ export default async function WarehousesPage({
                     href={`/emplacements?wh=${wh.id}`}
                     className="btn-secondary text-sm flex items-center gap-1.5 shrink-0"
                   >
-                    Emplacements
+                    Locaux
                     <ArrowRight className="size-3.5" />
                   </Link>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
-                    <div className="text-xs text-zinc-500 mb-1">Emplacements</div>
+                    <div className="text-xs text-zinc-500 mb-1">Locaux</div>
                     <div className="font-semibold tabular-nums">{wh._count.locations}</div>
                   </div>
                   <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
@@ -177,7 +177,7 @@ export default async function WarehousesPage({
           <div className="card p-5">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Plus className="size-4" />
-              Nouvel local
+              Nouveau site
             </h3>
             <form action={createWarehouse} className="space-y-3">
               <div>
@@ -186,7 +186,7 @@ export default async function WarehousesPage({
               </div>
               <div>
                 <label className="label">Dénomination *</label>
-                <input name="name" required className="input" placeholder="Local central" />
+                <input name="name" required className="input" placeholder="Site central" />
               </div>
               <div>
                 <label className="label">Adresse</label>
@@ -219,13 +219,13 @@ export default async function WarehousesPage({
                 </div>
               </div>
               <button type="submit" className="btn-primary w-full">
-                Créer l&apos;local
+                Créer le site
               </button>
             </form>
           </div>
 
           <div className="card p-4 mt-4 text-sm text-zinc-500">
-            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-1">Emplacements créés automatiquement</p>
+            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-1">Locaux créés automatiquement</p>
             <ul className="space-y-1 text-xs">
               <li>• <span className="font-mono">CODE/Stock</span> — Vue principale</li>
               <li>• <span className="font-mono">CODE/Réception</span> — Quai entrant</li>

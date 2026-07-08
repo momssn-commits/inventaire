@@ -26,7 +26,7 @@ export function WarehouseModeClient() {
         >
           <ArrowDown className="size-8 text-emerald-600 mb-3" />
           <div className="font-semibold text-lg">Réception</div>
-          <p className="text-sm text-zinc-500 mt-1">Scan produit, quantité, emplacement de destination</p>
+          <p className="text-sm text-zinc-500 mt-1">Scan produit, quantité, local de destination</p>
         </button>
         <button
           onClick={() => setOp('expedition')}

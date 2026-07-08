@@ -72,7 +72,7 @@ export default async function LoginPage({
           <span>·</span>
           <span>Traçabilité complète</span>
           <span>·</span>
-          <span>Multi-locaux</span>
+          <span>Multi-sites</span>
         </div>
       </div>
 

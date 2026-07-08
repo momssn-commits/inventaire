@@ -51,7 +51,7 @@ async function completeMO(formData: FormData) {
       data: { name: 'Production', fullPath: `${wh.code}/Production`, type: 'production', warehouseId: wh.id },
     });
   }
-  // Trouve le premier emplacement interne pour stocker le produit fini
+  // Trouve le premier local interne pour stocker le produit fini
   const finishLoc = await prisma.location.findFirst({
     where: { warehouseId: wh?.id, type: 'internal' },
   });

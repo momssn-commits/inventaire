@@ -185,7 +185,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       <div className="card p-5 mb-6">
         <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <MapPin className="size-4" /> Stock par emplacement
+          <MapPin className="size-4" /> Stock par local
         </h3>
         {product.stockLines.length === 0 ? (
           <p className="text-sm text-zinc-500">Aucun stock enregistré pour ce produit.</p>
@@ -193,8 +193,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <table className="table-base">
             <thead>
               <tr>
+                <th>Site</th>
                 <th>Local</th>
-                <th>Emplacement</th>
                 <th>Lot / N° série</th>
                 <th className="text-right">Quantité</th>
                 <th className="text-right">Coût unit.</th>

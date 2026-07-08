@@ -16,7 +16,7 @@ type Body = {
 
 /**
  * POST /api/v1/stock/transfer
- * Transfert atomique entre deux emplacements + création d'un Picking interne tracé.
+ * Transfert atomique entre deux locaux + création d'un Picking interne tracé.
  */
 export async function POST(req: NextRequest) {
   const auth = await authorize(req);

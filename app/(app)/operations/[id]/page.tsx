@@ -74,7 +74,7 @@ async function validatePicking(formData: FormData) {
   if (!picking) redirect('/operations?error=notfound');
   if (picking.state === 'done') redirect(`/operations/${pickingId}`);
 
-  // Emplacements virtuels par défaut
+  // Locaux virtuels par défaut
   const supplierLoc = await prisma.location.findFirst({ where: { type: 'supplier' } });
   const customerLoc = await prisma.location.findFirst({ where: { type: 'customer' } });
 

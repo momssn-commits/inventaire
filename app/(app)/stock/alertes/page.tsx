@@ -219,7 +219,7 @@ export default async function StockAlertsPage() {
             <thead>
               <tr>
                 <th>Produit</th>
-                <th>Emplacement</th>
+                <th>Local</th>
                 <th>Lot / N° série</th>
                 <th className="text-right">Quantité</th>
                 <th className="text-right">Valeur</th>

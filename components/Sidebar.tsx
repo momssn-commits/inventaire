@@ -33,10 +33,10 @@ const groups: Group[] = [
     ],
   },
   {
-    label: 'Locaux',
+    label: 'Sites',
     items: [
-      { href: '/entrepots',   label: 'Locaux',           icon: Warehouse,       badge: 'bg-orange-500' },
-      { href: '/emplacements',label: 'Emplacements',        icon: MapPin,          badge: 'bg-rose-500' },
+      { href: '/entrepots',   label: 'Sites',           icon: Warehouse,       badge: 'bg-orange-500' },
+      { href: '/emplacements',label: 'Locaux',        icon: MapPin,          badge: 'bg-rose-500' },
       { href: '/inventaire',  label: 'Inventaire cyclique', icon: RefreshCw,       badge: 'bg-teal-500' },
     ],
   },
