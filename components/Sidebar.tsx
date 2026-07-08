@@ -33,9 +33,9 @@ const groups: Group[] = [
     ],
   },
   {
-    label: 'Entrepôts',
+    label: 'Locaux',
     items: [
-      { href: '/entrepots',   label: 'Entrepôts',           icon: Warehouse,       badge: 'bg-orange-500' },
+      { href: '/entrepots',   label: 'Locaux',           icon: Warehouse,       badge: 'bg-orange-500' },
       { href: '/emplacements',label: 'Emplacements',        icon: MapPin,          badge: 'bg-rose-500' },
       { href: '/inventaire',  label: 'Inventaire cyclique', icon: RefreshCw,       badge: 'bg-teal-500' },
     ],

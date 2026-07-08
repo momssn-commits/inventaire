@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     });
     return apiOk(wh, { status: 201 });
   } catch (e: any) {
-    if (e.code === 'P2002') return apiError('conflict', 'Code d\'entrepôt déjà utilisé.', 409);
+    if (e.code === 'P2002') return apiError('conflict', 'Code d\'local déjà utilisé.', 409);
     return apiError('server_error', e.message, 500);
   }
 }

@@ -154,7 +154,7 @@ export default async function StockPage({
             <input name="q" defaultValue={sp.q ?? ''} placeholder="SKU, nom de produit…" className="input" />
           </div>
           <div className="min-w-[180px]">
-            <label className="label">Entrepôt</label>
+            <label className="label">Local</label>
             <select name="warehouse" defaultValue={sp.warehouse ?? ''} className="input">
               <option value="">Tous</option>
               {warehouses.map((w) => (
@@ -195,7 +195,7 @@ export default async function StockPage({
               <tr>
                 <th>SKU</th>
                 <th>Produit</th>
-                <th>Entrepôt</th>
+                <th>Local</th>
                 <th>Emplacement</th>
                 <th>Lot / N° série</th>
                 <th>État</th>

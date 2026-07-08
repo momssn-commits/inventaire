@@ -137,7 +137,7 @@ export default async function DashboardPage() {
           hint={`${outOfStock} en rupture`}
         />
         <KpiCard
-          label="Entrepôts"
+          label="Locaux"
           value={warehouses}
           icon={Warehouse}
           tone="default"

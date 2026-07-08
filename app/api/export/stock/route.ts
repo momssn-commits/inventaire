@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   });
 
   const rows = [
-    ['SKU', 'Désignation', 'Catégorie', 'Entrepôt', 'Emplacement', 'Lot / N° Série', 'Quantité', 'Coût unitaire', 'Valeur', 'Unité'].join(';'),
+    ['SKU', 'Désignation', 'Catégorie', 'Local', 'Emplacement', 'Lot / N° Série', 'Quantité', 'Coût unitaire', 'Valeur', 'Unité'].join(';'),
     ...lines.map((l) => [
       l.product.sku,
       `"${l.product.name.replace(/"/g, '""')}"`,

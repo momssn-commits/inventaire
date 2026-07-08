@@ -103,7 +103,7 @@ export function ApiLiveWidget() {
             <div className="text-lg font-semibold tabular-nums">{formatNumber(stats.counters.lots, 0)}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-500">Entrepôts</div>
+            <div className="text-xs text-zinc-500">Locaux</div>
             <div className="text-lg font-semibold tabular-nums">{formatNumber(stats.counters.warehouses, 0)}</div>
           </div>
           <div>

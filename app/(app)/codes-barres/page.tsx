@@ -7,7 +7,7 @@ export default function BarcodePage() {
     <div>
       <PageHeader
         title="Codes-barres"
-        subtitle="Interface de scan plein écran optimisée pour les opérations en entrepôt"
+        subtitle="Interface de scan plein écran optimisée pour les opérations en local"
         module="M5"
       />
 

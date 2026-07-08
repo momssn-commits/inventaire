@@ -193,7 +193,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <table className="table-base">
             <thead>
               <tr>
-                <th>Entrepôt</th>
+                <th>Local</th>
                 <th>Emplacement</th>
                 <th>Lot / N° série</th>
                 <th className="text-right">Quantité</th>

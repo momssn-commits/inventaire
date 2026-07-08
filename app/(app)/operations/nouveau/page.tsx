@@ -89,7 +89,7 @@ export default async function NewPickingPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Entrepôt source</label>
+            <label className="label">Local source</label>
             <select name="fromWarehouseId" className="input" defaultValue="">
               <option value="">— Aucun —</option>
               {warehouses.map((w) => (
@@ -98,7 +98,7 @@ export default async function NewPickingPage() {
             </select>
           </div>
           <div>
-            <label className="label">Entrepôt destination</label>
+            <label className="label">Local destination</label>
             <select name="toWarehouseId" className="input" defaultValue="">
               <option value="">— Aucun —</option>
               {warehouses.map((w) => (

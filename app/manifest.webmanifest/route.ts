@@ -18,7 +18,7 @@ export function GET() {
     ],
     shortcuts: [
       { name: 'Tableau de bord', url: '/dashboard' },
-      { name: 'Mode entrepôt', url: '/codes-barres' },
+      { name: 'Mode local', url: '/codes-barres' },
       { name: 'Nouveau mouvement', url: '/operations/nouveau' },
     ],
   });

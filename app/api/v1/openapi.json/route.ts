@@ -208,9 +208,9 @@ const spec = {
       delete: { tags: ['Produits'], summary: 'Soft-delete' },
     },
     '/warehouses': {
-      get: { tags: ['Entrepôts'], summary: 'Liste des entrepôts' },
+      get: { tags: ['Locaux'], summary: 'Liste des locaux' },
       post: {
-        tags: ['Entrepôts'], summary: 'Créer un entrepôt',
+        tags: ['Locaux'], summary: 'Créer un local',
         requestBody: {
           required: true,
           content: {
@@ -223,7 +223,7 @@ const spec = {
     },
     '/warehouses/{id}': {
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-      get: { tags: ['Entrepôts'], summary: 'Détail entrepôt + emplacements' },
+      get: { tags: ['Locaux'], summary: 'Détail local + emplacements' },
     },
     '/locations': {
       get: { tags: ['Emplacements'], summary: 'Liste des emplacements' },
@@ -340,7 +340,7 @@ const spec = {
     { name: 'Authentification' },
     { name: 'Tableau de bord' },
     { name: 'Produits' },
-    { name: 'Entrepôts' },
+    { name: 'Locaux' },
     { name: 'Emplacements' },
     { name: 'Lots / N° série' },
     { name: 'Partenaires' },

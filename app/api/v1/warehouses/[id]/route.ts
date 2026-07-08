@@ -12,6 +12,6 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       locations: { orderBy: { fullPath: 'asc' } },
     },
   });
-  if (!wh) return apiError('not_found', 'Entrepôt introuvable.', 404);
+  if (!wh) return apiError('not_found', 'Local introuvable.', 404);
   return apiOk(wh);
 }

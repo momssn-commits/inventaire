@@ -104,9 +104,9 @@ export default async function LocationsPage({
           <div className="card p-4">
             <form className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[180px]">
-                <label className="label">Entrepôt</label>
+                <label className="label">Local</label>
                 <select name="wh" defaultValue={sp.wh ?? ''} className="input">
-                  <option value="">Tous les entrepôts</option>
+                  <option value="">Tous les locaux</option>
                   {warehouses.map((w) => (
                     <option key={w.id} value={w.id}>{w.name} ({w.code})</option>
                   ))}
@@ -156,7 +156,7 @@ export default async function LocationsPage({
                   <tr>
                     <th>Chemin complet</th>
                     <th>Type</th>
-                    <th>Entrepôt</th>
+                    <th>Local</th>
                     <th>Code-barres</th>
                     <th className="text-right">Lignes stock</th>
                     <th className="text-right">Sous-empl.</th>
@@ -231,7 +231,7 @@ export default async function LocationsPage({
                 <input name="name" required className="input" placeholder="Casier-A7" />
               </div>
               <div>
-                <label className="label">Entrepôt</label>
+                <label className="label">Local</label>
                 <select name="warehouseId" className="input" defaultValue={sp.wh ?? ''}>
                   <option value="">— Virtuel —</option>
                   {warehouses.map((w) => (
