@@ -206,6 +206,10 @@ model Lot {
   brand          String?  // marque
   specifications String?  // spécifications libres
   serviceName    String?  // affectation organisationnelle
+  codeImmo       String?  // code d'immobilisation comptable
+  grossValue     Float?   // valeur brute d'acquisition (FCFA)
+  depreciation   Float?   // amortissement cumulé (FCFA)
+  bookValue      Float?   // valeur comptable nette (FCFA)
   notes          String?
   createdAt    DateTime @default(now())
 
