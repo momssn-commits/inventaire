@@ -9,6 +9,7 @@ import {
   Users, ShoppingCart,
   ClipboardList, Factory,
   ShieldCheck, Wrench, BarChart3,
+  UsersRound, ScrollText, Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -70,8 +71,18 @@ const groups: Group[] = [
   },
 ];
 
-export function Sidebar({ companyName }: { companyName: string }) {
+const adminGroup: Group = {
+  label: 'Administration',
+  items: [
+    { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: UsersRound },
+    { href: '/admin/audit',        label: 'Journal d\'audit', icon: ScrollText },
+    { href: '/admin/societe',      label: 'Société',      icon: Building2 },
+  ],
+};
+
+export function Sidebar({ companyName, isAdmin }: { companyName: string; isAdmin?: boolean }) {
   const pathname = usePathname();
+  const allGroups = isAdmin ? [...groups, adminGroup] : groups;
 
   return (
     <aside
@@ -96,7 +107,7 @@ export function Sidebar({ companyName }: { companyName: string }) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto -mx-1 px-1">
-        {groups.map((g) => (
+        {allGroups.map((g) => (
           <div key={g.label}>
             <div className="px-3 pt-[18px] pb-2 text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: '#475569' }}>
               {g.label}
