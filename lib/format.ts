@@ -16,6 +16,21 @@ export function formatMoney(
   }).format(value);
 }
 
+/** Montant compact pour les KPI : 1 250 000 → « 1,25 M », 188 886 373 → « 188,9 M ». */
+export function formatMoneyShort(
+  value: number,
+  currency = DEFAULT_CURRENCY,
+  locale = DEFAULT_LOCALE
+): string {
+  const sym = currency === 'XOF' || currency === 'XAF' ? 'FCFA' : currency;
+  const abs = Math.abs(value);
+  const nf = (v: number, d: number) => new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: d }).format(v);
+  if (abs >= 1_000_000_000) return `${nf(value / 1_000_000_000, 1)} Md ${sym}`;
+  if (abs >= 1_000_000) return `${nf(value / 1_000_000, 1)} M ${sym}`;
+  if (abs >= 10_000) return `${nf(value / 1_000, 0)} k ${sym}`;
+  return formatMoney(value, currency, locale);
+}
+
 export function formatNumber(value: number, decimals = 2, locale = DEFAULT_LOCALE): string {
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: decimals,

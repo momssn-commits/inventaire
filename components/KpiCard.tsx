@@ -17,34 +17,26 @@ export function KpiCard({
   hint?: string;
 }) {
   const iconClass = {
-    default: 'bg-zinc-800 text-zinc-300',
-    success: 'bg-emerald-950/60 text-emerald-400',
-    warning: 'bg-amber-950/60 text-amber-400',
-    danger: 'bg-red-950/60 text-red-400',
-    info: 'bg-indigo-950/60 text-indigo-400',
-  }[tone];
-
-  const valueClass = {
-    default: 'text-white',
-    success: 'text-emerald-300',
-    warning: 'text-amber-300',
-    danger: 'text-red-300',
-    info: 'text-indigo-300',
+    default: 'i-blue',
+    info: 'i-blue',
+    success: 'i-green',
+    warning: 'i-amber',
+    danger: 'i-red',
   }[tone];
 
   return (
-    <div className="card p-5 hover:bg-white/[0.02] transition-colors">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="text-xs uppercase tracking-widest text-zinc-500 font-semibold">{label}</div>
-          <div className={cn('mt-2 text-xl font-bold tracking-tight tabular-nums leading-tight truncate', valueClass)} title={String(value)}>{value}</div>
-          {hint && <div className="mt-1 text-xs text-zinc-500">{hint}</div>}
-          {delta && <div className="mt-1 text-xs text-zinc-500">{delta}</div>}
+    <div className="card p-5 transition hover:-translate-y-[3px] hover:shadow-[var(--shadow-md)]">
+      <div className="flex items-center justify-between mb-3.5">
+        <div className={cn('grid place-items-center size-10 rounded-xl', iconClass)}>
+          <Icon className="size-[19px]" />
         </div>
-        <div className={cn('size-10 rounded-xl grid place-items-center shrink-0', iconClass)}>
-          <Icon className="size-5" />
-        </div>
+        {delta && <span className="trend t-flat">{delta}</span>}
       </div>
+      <div className="text-[22px] xl:text-[25px] font-bold font-display leading-none tabular-nums truncate" title={String(value)}>
+        {value}
+      </div>
+      <div className="text-[13px] font-medium mt-1.5" style={{ color: 'rgb(100 116 139)' }}>{label}</div>
+      {hint && <div className="text-xs mt-1" style={{ color: 'rgb(100 116 139)' }}>{hint}</div>}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
-import { formatMoney, formatNumber, formatDate } from '@/lib/format';
+import { formatMoney, formatMoneyShort, formatNumber, formatDate } from '@/lib/format';
 import { PageHeader } from '@/components/PageHeader';
 import { KpiCard } from '@/components/KpiCard';
 import { EmptyState } from '@/components/EmptyState';
@@ -123,7 +123,7 @@ export default async function StockPage({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <KpiCard
           label="Valeur totale du stock"
-          value={formatMoney(agg.totalValue)}
+          value={formatMoneyShort(agg.totalValue)}
           icon={Boxes}
           tone="info"
         />

@@ -8,8 +8,7 @@ import {
   Truck, Zap, ScanLine,
   Users, ShoppingCart,
   ClipboardList, Factory,
-  ShieldCheck, Wrench,
-  ChevronLeft,
+  ShieldCheck, Wrench, BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -17,56 +16,56 @@ type Item = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge: string; // Tailwind bg color for the icon badge
 };
 
 type Group = { label: string; items: Item[] };
 
 const groups: Group[] = [
   {
-    label: 'Stock',
+    label: 'Général',
     items: [
-      { href: '/dashboard',   label: 'Tableau de bord',    icon: LayoutDashboard, badge: 'bg-indigo-500' },
-      { href: '/produits',    label: 'Produits',            icon: Package,         badge: 'bg-amber-500' },
-      { href: '/stock',       label: 'État des stocks',     icon: Layers,          badge: 'bg-orange-600' },
-      { href: '/lots',        label: 'Lots',                icon: Archive,         badge: 'bg-blue-500' },
+      { href: '/dashboard',   label: 'Tableau de bord',    icon: LayoutDashboard },
+      { href: '/produits',    label: 'Produits',            icon: Package },
+      { href: '/stock',       label: 'État des stocks',     icon: Layers },
+      { href: '/lots',        label: 'Lots',                icon: Archive },
     ],
   },
   {
     label: 'Sites',
     items: [
-      { href: '/entrepots',   label: 'Sites',           icon: Warehouse,       badge: 'bg-orange-500' },
-      { href: '/emplacements',label: 'Locaux',        icon: MapPin,          badge: 'bg-rose-500' },
-      { href: '/inventaire',  label: 'Inventaire cyclique', icon: RefreshCw,       badge: 'bg-teal-500' },
+      { href: '/entrepots',   label: 'Sites',               icon: Warehouse },
+      { href: '/emplacements',label: 'Locaux',              icon: MapPin },
+      { href: '/inventaire',  label: 'Inventaire cyclique', icon: RefreshCw },
     ],
   },
   {
     label: 'Opérations',
     items: [
-      { href: '/operations',  label: 'Mouvements',          icon: Truck,           badge: 'bg-orange-500' },
-      { href: '/reassort',    label: 'Réassort',            icon: Zap,             badge: 'bg-yellow-500' },
-      { href: '/codes-barres',label: 'Codes-barres',        icon: ScanLine,        badge: 'bg-slate-500' },
+      { href: '/operations',  label: 'Mouvements',          icon: Truck },
+      { href: '/reassort',    label: 'Réassort',            icon: Zap },
+      { href: '/codes-barres',label: 'Codes-barres',        icon: ScanLine },
     ],
   },
   {
     label: 'Achats',
     items: [
-      { href: '/partenaires', label: 'Fournisseurs',        icon: Users,           badge: 'bg-amber-600' },
-      { href: '/achats',      label: 'Commandes achat',     icon: ShoppingCart,    badge: 'bg-slate-500' },
+      { href: '/partenaires', label: 'Fournisseurs',        icon: Users },
+      { href: '/achats',      label: 'Commandes achat',     icon: ShoppingCart },
     ],
   },
   {
     label: 'Production',
     items: [
-      { href: '/fabrication/bom', label: 'Nomenclatures',  icon: ClipboardList,   badge: 'bg-zinc-500' },
-      { href: '/fabrication', label: 'Fabrication',         icon: Factory,         badge: 'bg-zinc-600' },
+      { href: '/fabrication/bom', label: 'Nomenclatures',   icon: ClipboardList },
+      { href: '/fabrication', label: 'Fabrication',         icon: Factory },
     ],
   },
   {
-    label: 'Qualité & Maintenance',
+    label: 'Qualité & Analyse',
     items: [
-      { href: '/qualite',     label: 'Qualité',             icon: ShieldCheck,     badge: 'bg-emerald-500' },
-      { href: '/maintenance', label: 'Maintenance',         icon: Wrench,          badge: 'bg-slate-400' },
+      { href: '/qualite',     label: 'Qualité',             icon: ShieldCheck },
+      { href: '/maintenance', label: 'Maintenance',         icon: Wrench },
+      { href: '/rapports',    label: 'Rapports',            icon: BarChart3 },
     ],
   },
 ];
@@ -76,28 +75,30 @@ export function Sidebar({ companyName }: { companyName: string }) {
 
   return (
     <aside
-      className="hidden md:flex md:w-60 lg:w-64 flex-col flex-shrink-0"
-      style={{ background: 'rgb(10 11 22)', borderRight: '1px solid rgb(30 33 52)' }}
+      className="hidden md:flex md:w-[248px] flex-col flex-shrink-0 sticky top-0 h-screen px-4 py-5 no-print"
+      style={{ background: 'linear-gradient(180deg,#0b1220 0%,#0e1730 100%)', color: '#cbd5e1' }}
     >
       {/* Logo */}
-      <div className="h-14 px-4 flex items-center gap-2.5" style={{ borderBottom: '1px solid rgb(30 33 52)' }}>
-        <div className="size-8 rounded-lg bg-indigo-600 grid place-items-center shrink-0">
-          <Package className="size-4 text-white" />
+      <div className="flex items-center gap-3 px-2.5 pb-6">
+        <div
+          className="size-[38px] rounded-xl grid place-items-center text-white font-display font-bold text-base shrink-0"
+          style={{ background: 'linear-gradient(135deg,#2563eb,#7c3aed)', boxShadow: '0 6px 16px -4px rgba(37,99,235,.55)' }}
+        >
+          IP
         </div>
-        <div className="min-w-0">
-          <div className="font-bold text-sm text-white leading-tight">Inventaire Pro</div>
-          <div className="text-[10px] text-zinc-500 truncate">{companyName}</div>
+        <div className="min-w-0 leading-tight">
+          <div className="font-display font-semibold text-white text-[16.5px] truncate">Inventaire Pro</div>
+          <div className="text-[10.5px] font-medium uppercase tracking-[0.14em] truncate" style={{ color: '#64748b' }}>
+            {companyName}
+          </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2 pb-4">
+      <nav className="flex-1 overflow-y-auto -mx-1 px-1">
         {groups.map((g) => (
-          <div key={g.label} className="mt-4">
-            <div
-              className="px-2 mb-1 text-[10px] uppercase tracking-widest font-semibold"
-              style={{ color: 'rgb(75 80 105)' }}
-            >
+          <div key={g.label}>
+            <div className="px-3 pt-[18px] pb-2 text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: '#475569' }}>
               {g.label}
             </div>
             <ul className="space-y-0.5">
@@ -110,22 +111,22 @@ export function Sidebar({ companyName }: { companyName: string }) {
                     <Link
                       href={it.href}
                       className={cn(
-                        'flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm transition-all',
-                        active
-                          ? 'text-white'
-                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
+                        'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                        active ? 'text-white font-semibold' : 'text-slate-400 hover:text-slate-100'
                       )}
-                      style={active ? { background: 'rgba(99,102,241,0.18)' } : {}}
+                      style={
+                        active
+                          ? { background: 'linear-gradient(90deg,rgba(37,99,235,.22),rgba(37,99,235,.06))' }
+                          : undefined
+                      }
                     >
-                      {/* Colored icon badge */}
-                      <span
-                        className={cn(
-                          'size-6 rounded-md grid place-items-center shrink-0 text-white',
-                          it.badge
-                        )}
-                      >
-                        <it.icon className="size-3.5" />
-                      </span>
+                      {active && (
+                        <span
+                          className="absolute -left-4 top-2 bottom-2 w-[3px] rounded-r"
+                          style={{ background: 'linear-gradient(180deg,#4f8bff,#7c3aed)' }}
+                        />
+                      )}
+                      <it.icon className="size-[18px] shrink-0" />
                       <span className="truncate">{it.label}</span>
                     </Link>
                   </li>
@@ -135,6 +136,17 @@ export function Sidebar({ companyName }: { companyName: string }) {
           </div>
         ))}
       </nav>
+
+      {/* Astuce */}
+      <div
+        className="mt-4 rounded-2xl p-3.5"
+        style={{ background: 'linear-gradient(135deg,rgba(37,99,235,.25),rgba(124,58,237,.2))', border: '1px solid rgba(79,139,255,.25)' }}
+      >
+        <b className="block text-white text-[13.5px] mb-0.5">Astuce du jour</b>
+        <p className="text-xs leading-snug" style={{ color: '#94a3b8' }}>
+          Fixez des seuils d'alerte par produit pour anticiper les ruptures.
+        </p>
+      </div>
     </aside>
   );
 }

@@ -1,23 +1,32 @@
 import Link from 'next/link';
-import { Package, Plus, Filter, Download, Upload, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Plus, Download, Upload, Boxes, Coins, AlertTriangle, XCircle, SlidersHorizontal } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
-import { formatMoney, formatNumber } from '@/lib/format';
+import { formatMoney, formatMoneyShort, formatNumber } from '@/lib/format';
 import { PageHeader } from '@/components/PageHeader';
+import { KpiCard } from '@/components/KpiCard';
 import { EmptyState } from '@/components/EmptyState';
 
 export const dynamic = 'force-dynamic';
 
 const PER_PAGE = 50;
+const AVATARS = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
+
+function emojiFor(type: string, i: number) {
+  if (type === 'service') return '🛠️';
+  const set = ['📦', '🧰', '🖥️', '🪑', '🗄️', '🔩', '📎'];
+  return set[i % set.length];
+}
 
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; cat?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; cat?: string; sort?: string; page?: string }>;
 }) {
   const session = await requireSession();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1));
+  const sort = sp.sort ?? 'name_asc';
 
   const where = {
     companyId: session.companyId,
@@ -35,7 +44,9 @@ export default async function ProductsPage({
     ...(sp.cat ? { categoryId: sp.cat } : {}),
   };
 
-  const [products, totalCount, categories] = await Promise.all([
+  const orderBy = sort === 'name_desc' ? { name: 'desc' as const } : { name: 'asc' as const };
+
+  const [products, totalCount, categories, statRows, catCounts, grandTotal] = await Promise.all([
     prisma.product.findMany({
       where,
       include: {
@@ -43,21 +54,38 @@ export default async function ProductsPage({
         stockLines: { where: { location: { type: 'internal' } } },
         uomStock: true,
       },
-      orderBy: { name: 'asc' },
+      orderBy,
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
     }),
     prisma.product.count({ where }),
     prisma.category.findMany({ orderBy: { name: 'asc' } }),
+    // Stats sur l'ensemble filtré
+    prisma.product.findMany({
+      where,
+      select: { type: true, minQty: true, stockLines: { where: { location: { type: 'internal' } }, select: { quantity: true, unitCost: true } } },
+    }),
+    prisma.product.groupBy({ by: ['categoryId'], where: { companyId: session.companyId, deletedAt: null }, _count: true }),
+    prisma.product.count({ where: { companyId: session.companyId, deletedAt: null } }),
   ]);
 
+  // Agrégats
+  let stockValue = 0, lowCount = 0, outCount = 0;
+  for (const p of statRows) {
+    const qty = p.stockLines.reduce((s, l) => s + l.quantity, 0);
+    stockValue += p.stockLines.reduce((s, l) => s + l.quantity * l.unitCost, 0);
+    if (p.type !== 'service') {
+      if (qty <= 0) outCount++;
+      else if (p.minQty > 0 && qty < p.minQty) lowCount++;
+    }
+  }
+  const catCountMap = new Map(catCounts.map((c) => [c.categoryId, c._count]));
+
   const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
-  const buildPageUrl = (p: number) => {
+  const buildUrl = (patch: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    if (sp.q) params.set('q', sp.q);
-    if (sp.type) params.set('type', sp.type);
-    if (sp.cat) params.set('cat', sp.cat);
-    if (p !== 1) params.set('page', String(p));
+    const merged = { q: sp.q, type: sp.type, cat: sp.cat, sort: sp.sort, ...patch };
+    for (const [k, v] of Object.entries(merged)) if (v) params.set(k, v);
     const s = params.toString();
     return s ? `/produits?${s}` : '/produits';
   };
@@ -65,47 +93,54 @@ export default async function ProductsPage({
   return (
     <div>
       <PageHeader
+        eyebrow="Catalogue"
         title="Produits"
-        subtitle="Gestion du catalogue, des unités, lots et numéros de série"
-        module="M1"
+        count={formatNumber(totalCount, 0)}
+        subtitle="Gérez vos références, suivez les niveaux de stock et les valorisations en temps réel."
         actions={
           <>
-            <a href="/api/export/produits" className="btn-secondary"><Download className="size-4" /> Exporter CSV</a>
+            <a href="/api/export/produits" className="btn-secondary"><Download className="size-4" /> Exporter</a>
             <Link href="/produits/import" className="btn-secondary"><Upload className="size-4" /> Importer</Link>
             <Link href="/produits/nouveau" className="btn-primary"><Plus className="size-4" /> Nouveau produit</Link>
           </>
         }
       />
 
-      <div className="card p-4 mb-4">
-        <form className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-[200px]">
-            <label className="label">Recherche</label>
-            <input name="q" defaultValue={sp.q ?? ''} placeholder="SKU, nom, code-barres…" className="input" />
-          </div>
-          <div className="min-w-[160px]">
-            <label className="label">Type</label>
-            <select name="type" defaultValue={sp.type ?? ''} className="input">
-              <option value="">Tous</option>
-              <option value="storable">Stockable</option>
-              <option value="consumable">Consommable</option>
-              <option value="service">Service</option>
-            </select>
-          </div>
-          <div className="min-w-[160px]">
-            <label className="label">Catégorie</label>
-            <select name="cat" defaultValue={sp.cat ?? ''} className="input">
-              <option value="">Toutes</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-          <button type="submit" className="btn-secondary"><Filter className="size-4" /> Filtrer</button>
+      {/* Stats */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 rise d1">
+        <KpiCard label="Références actives" value={formatNumber(totalCount, 0)} icon={Boxes} tone="info" />
+        <KpiCard label="Valeur du stock" value={formatMoneyShort(stockValue)} icon={Coins} tone="success" />
+        <KpiCard label="Produits en stock faible" value={lowCount} icon={AlertTriangle} tone="warning" />
+        <KpiCard label="Ruptures à traiter" value={outCount} icon={XCircle} tone="danger" />
+      </section>
+
+      {/* Filtres — chips catégories + tri */}
+      <div className="flex items-center gap-2.5 flex-wrap mb-4 rise d2">
+        <Link href={buildUrl({ cat: undefined, page: undefined })} className={`chip ${!sp.cat ? 'active' : ''}`}>
+          Tous <span className="n">{grandTotal}</span>
+        </Link>
+        {categories.map((c) => (
+          <Link key={c.id} href={buildUrl({ cat: c.id, page: undefined })} className={`chip ${sp.cat === c.id ? 'active' : ''}`}>
+            {c.name} <span className="n">{catCountMap.get(c.id) ?? 0}</span>
+          </Link>
+        ))}
+        <div className="flex-1" />
+        <form className="sort flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13.5px]"
+          style={{ background: '#fff', border: '1px solid rgb(232 236 244)', boxShadow: 'var(--shadow-sm)', color: 'rgb(100 116 139)' }}>
+          {sp.q && <input type="hidden" name="q" value={sp.q} />}
+          {sp.type && <input type="hidden" name="type" value={sp.type} />}
+          {sp.cat && <input type="hidden" name="cat" value={sp.cat} />}
+          <SlidersHorizontal className="size-[15px]" />
+          <select name="sort" defaultValue={sort} className="bg-transparent font-semibold outline-none cursor-pointer" style={{ color: 'rgb(11 18 32)' }}>
+            <option value="name_asc">Nom (A→Z)</option>
+            <option value="name_desc">Nom (Z→A)</option>
+          </select>
+          <button type="submit" className="text-[12px] font-semibold" style={{ color: 'rgb(37 99 235)' }}>Trier</button>
         </form>
       </div>
 
-      <div className="card overflow-x-auto">
+      {/* Tableau */}
+      <div className="card overflow-x-auto rise d3">
         {products.length === 0 ? (
           <EmptyState
             icon={Package}
@@ -117,61 +152,67 @@ export default async function ProductsPage({
           <table className="table-base">
             <thead>
               <tr>
-                <th>Référence</th>
-                <th>Désignation</th>
-                <th>Type</th>
+                <th>Produit</th>
+                <th>SKU</th>
                 <th>Suivi</th>
-                <th>Catégorie</th>
-                <th className="text-right">Stock</th>
-                <th className="text-right">Coût</th>
-                <th className="text-right">Prix vente</th>
-                <th className="text-right">Valeur</th>
+                <th className="text-right">Prix unitaire</th>
+                <th className="text-right">Qté</th>
+                <th>Niveau de stock</th>
+                <th>Statut</th>
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => {
+              {products.map((p, i) => {
                 const qty = p.stockLines.reduce((s, l) => s + l.quantity, 0);
-                const value = p.stockLines.reduce((s, l) => s + l.quantity * l.unitCost, 0);
-                const lowStock = p.minQty > 0 && qty < p.minQty;
+                const isService = p.type === 'service';
+                const out = !isService && qty <= 0;
+                const low = !isService && !out && p.minQty > 0 && qty < p.minQty;
+                const target = p.minQty > 0 ? p.minQty * 2 : Math.max(qty, 1);
+                let pct = out ? 2 : Math.min(100, Math.round((qty / target) * 100));
+                let g = out ? 'g-danger' : low ? 'g-warn' : 'g-ok';
+                if (g === 'g-ok') pct = Math.max(pct, 55);
+
                 return (
                   <tr key={p.id}>
-                    <td className="font-mono text-xs">{p.sku}</td>
                     <td>
-                      <Link href={`/produits/${p.id}`} className="text-brand-600 hover:underline font-medium">
-                        {p.name}
-                      </Link>
-                      {p.barcode && (
-                        <div className="text-xs text-zinc-500 font-mono mt-0.5">{p.barcode}</div>
+                      <div className="flex items-center gap-3.5">
+                        <div className={`prod-img ${AVATARS[i % AVATARS.length]}`}>{emojiFor(p.type, i)}</div>
+                        <div className="min-w-0">
+                          <Link href={`/produits/${p.id}`} className="font-semibold text-[14.5px] hover:text-[color:rgb(37_99_235)] transition-colors block truncate max-w-[280px]">
+                            {p.name}
+                          </Link>
+                          <div className="text-[12.5px] mt-0.5" style={{ color: 'rgb(100 116 139)' }}>
+                            {p.category?.name ?? '—'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="sku">{p.sku}</span></td>
+                    <td className="text-[13.5px]" style={{ color: 'rgb(100 116 139)' }}>
+                      {p.tracking === 'serial' ? 'N° série' : p.tracking === 'lot' ? 'Par lot' : '—'}
+                    </td>
+                    <td className="text-right mono text-[13.5px]">{formatMoney(p.salePrice || p.cost)}</td>
+                    <td className="text-right mono text-[13.5px] font-semibold">{isService ? '—' : formatNumber(qty, 0)}</td>
+                    <td>
+                      {isService ? (
+                        <span className="text-[13px]" style={{ color: 'rgb(100 116 139)' }}>—</span>
+                      ) : (
+                        <div className={`gauge ${g}`}>
+                          <div className="gauge-track"><div className="gauge-fill" style={{ width: `${pct}%` }} /></div>
+                          <span className="gauge-label">{pct}%</span>
+                        </div>
                       )}
                     </td>
-                    <td className="text-xs">
-                      {p.type === 'storable' ? 'Stockable' : p.type === 'consumable' ? 'Consommable' : 'Service'}
-                    </td>
-                    <td className="text-xs">
-                      {p.tracking === 'serial' ? 'Numéro série' : p.tracking === 'lot' ? 'Par lot' : '—'}
-                    </td>
-                    <td className="text-xs">
-                      {p.category && (
-                        <span className="badge bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                          <Tag className="size-3 mr-1" /> {p.category.name}
-                        </span>
+                    <td>
+                      {isService ? (
+                        <span className="badge b-info dot">Service</span>
+                      ) : out ? (
+                        <span className="badge b-danger dot">Rupture</span>
+                      ) : low ? (
+                        <span className="badge b-warn dot">Stock faible</span>
+                      ) : (
+                        <span className="badge b-ok dot">En stock</span>
                       )}
-                    </td>
-                    <td className="text-right tabular-nums">
-                      {p.type === 'service' ? '—' : (
-                        <span className={lowStock ? 'text-amber-600 font-medium' : ''}>
-                          {formatNumber(qty, 0)} {p.uomStock.symbol}
-                        </span>
-                      )}
-                    </td>
-                    <td className="text-right tabular-nums text-sm text-zinc-600 dark:text-zinc-400">
-                      {formatMoney(p.cost)}
-                    </td>
-                    <td className="text-right tabular-nums text-sm">
-                      {formatMoney(p.salePrice)}
-                    </td>
-                    <td className="text-right tabular-nums text-sm font-medium">
-                      {p.type === 'service' ? '—' : formatMoney(value)}
                     </td>
                   </tr>
                 );
@@ -179,35 +220,54 @@ export default async function ProductsPage({
             </tbody>
           </table>
         )}
-      </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <div className="text-xs text-zinc-500">
-          {totalCount > 0 ? (
-            <>
-              {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, totalCount)} sur{' '}
-              <span className="font-medium">{totalCount}</span> produit(s)
-            </>
-          ) : (
-            '0 produit'
-          )}
-        </div>
-        {totalPages > 1 && (
-          <div className="flex items-center gap-1">
-            {page > 1 ? (
-              <Link href={buildPageUrl(page - 1)} className="btn-ghost p-1.5"><ChevronLeft className="size-4" /></Link>
-            ) : (
-              <button className="btn-ghost p-1.5 opacity-30" disabled><ChevronLeft className="size-4" /></button>
-            )}
-            <span className="text-xs px-2 tabular-nums">{page} / {totalPages}</span>
-            {page < totalPages ? (
-              <Link href={buildPageUrl(page + 1)} className="btn-ghost p-1.5"><ChevronRight className="size-4" /></Link>
-            ) : (
-              <button className="btn-ghost p-1.5 opacity-30" disabled><ChevronRight className="size-4" /></button>
+        {/* Pied de tableau / pagination */}
+        {totalCount > 0 && (
+          <div className="flex items-center justify-between gap-3 px-5 py-4 text-[13.5px]"
+            style={{ color: 'rgb(100 116 139)', background: '#fbfcfe', borderTop: '1px solid rgb(232 236 244)' }}>
+            <span>
+              Affichage de <strong style={{ color: 'rgb(11 18 32)' }}>{(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, totalCount)}</strong> sur{' '}
+              <strong style={{ color: 'rgb(11 18 32)' }}>{formatNumber(totalCount, 0)}</strong> produits
+            </span>
+            {totalPages > 1 && (
+              <div className="flex gap-1.5">
+                <PageBtn href={page > 1 ? buildUrl({ page: String(page - 1) }) : undefined}>‹</PageBtn>
+                {pageWindow(page, totalPages).map((n, idx) =>
+                  n === '…' ? (
+                    <span key={`e${idx}`} className="grid place-items-center min-w-[34px] h-[34px]">…</span>
+                  ) : (
+                    <PageBtn key={n} href={buildUrl({ page: n === 1 ? undefined : String(n) })} current={n === page}>{n}</PageBtn>
+                  )
+                )}
+                <PageBtn href={page < totalPages ? buildUrl({ page: String(page + 1) }) : undefined}>›</PageBtn>
+              </div>
             )}
           </div>
         )}
       </div>
     </div>
   );
+}
+
+function PageBtn({ href, current, children }: { href?: string; current?: boolean; children: React.ReactNode }) {
+  const base = 'grid place-items-center min-w-[34px] h-[34px] rounded-[10px] text-[13.5px] font-medium transition';
+  if (current) {
+    return (
+      <span className={`${base} text-white`} style={{ background: 'linear-gradient(135deg,#2563eb,#4f8bff)', boxShadow: '0 6px 14px -4px rgba(37,99,235,.5)' }}>
+        {children}
+      </span>
+    );
+  }
+  if (!href) return <span className={`${base} opacity-30`} style={{ color: 'rgb(100 116 139)' }}>{children}</span>;
+  return <Link href={href} className={`${base} hover:bg-slate-100`} style={{ color: 'rgb(100 116 139)' }}>{children}</Link>;
+}
+
+function pageWindow(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | '…')[] = [1];
+  if (current > 3) out.push('…');
+  for (let n = Math.max(2, current - 1); n <= Math.min(total - 1, current + 1); n++) out.push(n);
+  if (current < total - 2) out.push('…');
+  out.push(total);
+  return out;
 }

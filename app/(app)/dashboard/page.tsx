@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Package, Warehouse, AlertTriangle, TrendingUp, Truck, Factory, ShieldAlert, Boxes, Plus, ArrowLeftRight, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
-import { formatMoney, formatNumber } from '@/lib/format';
+import { formatMoney, formatMoneyShort, formatNumber } from '@/lib/format';
 import { PageHeader } from '@/components/PageHeader';
 import { KpiCard } from '@/components/KpiCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
         <KpiCard
           label="Valeur du stock"
-          value={formatMoney(stockValue)}
+          value={formatMoneyShort(stockValue)}
           icon={TrendingUp}
           tone="info"
           hint={`${formatNumber(stockUnits, 0)} unités au total`}

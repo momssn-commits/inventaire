@@ -66,13 +66,13 @@ export default async function LoginPage({
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12"
         style={{ background: 'rgb(10 11 22)', borderRight: '1px solid rgb(30 33 52)' }}>
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-indigo-600 grid place-items-center shadow-lg shadow-indigo-900/50">
+          <div className="size-10 rounded-xl grid place-items-center" style={{ background: 'linear-gradient(135deg,#2563eb,#7c3aed)', boxShadow: '0 6px 16px -4px rgba(37,99,235,.55)' }}>
             <Boxes className="size-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-white">Inventaire Pro</span>
+          <span className="text-lg font-bold text-white font-display">Inventaire Pro</span>
         </div>
         <div>
-          <blockquote className="text-2xl font-semibold text-white leading-snug mb-4">
+          <blockquote className="text-2xl font-semibold text-white leading-snug mb-4 font-display">
             "Maîtrisez votre stock,<br />pilotez votre activité."
           </blockquote>
           <p className="text-sm text-zinc-400">
@@ -93,19 +93,19 @@ export default async function LoginPage({
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="size-10 rounded-xl bg-indigo-600 grid place-items-center">
+            <div className="size-10 rounded-xl grid place-items-center" style={{ background: 'linear-gradient(135deg,#2563eb,#7c3aed)' }}>
               <Boxes className="size-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-white">Inventaire Pro</span>
+            <span className="text-lg font-bold font-display" style={{ color: 'rgb(11 18 32)' }}>Inventaire Pro</span>
           </div>
 
-          <h1 className="text-2xl font-semibold text-white mb-1">Connexion</h1>
-          <p className="text-sm mb-8" style={{ color: 'rgb(var(--muted))' }}>
+          <h1 className="text-2xl font-bold font-display mb-1" style={{ color: 'rgb(11 18 32)' }}>Connexion</h1>
+          <p className="text-sm mb-8" style={{ color: 'rgb(100 116 139)' }}>
             Accédez à votre espace de gestion.
           </p>
 
           {error && (
-            <div className="mb-5 rounded-lg bg-red-950/40 border border-red-900/60 px-4 py-3 text-sm text-red-300">
+            <div className="mb-5 rounded-xl px-4 py-3 text-sm" style={{ background: '#fdeaea', border: '1px solid #f5c2c4', color: 'rgb(229 72 77)' }}>
               {error === 'missing'
                 ? 'Veuillez renseigner vos identifiants.'
                 : error === 'locked'
