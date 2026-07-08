@@ -11,21 +11,33 @@ async function login(formData: FormData) {
   if (!email || !password) {
     redirect('/login?error=missing');
   }
+  const MAX_ATTEMPTS = 5;
+  const LOCK_MINUTES = 15;
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !user.active) {
     redirect('/login?error=invalid');
   }
+  // Verrouillage anti-force-brute : compte bloqué temporairement.
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    redirect('/login?error=locked');
+  }
   const ok = await verifyPassword(password, user.passwordHash);
   if (!ok) {
+    const attempts = user.failedAttempts + 1;
+    const lock = attempts >= MAX_ATTEMPTS;
     await prisma.user.update({
       where: { id: user.id },
-      data: { failedAttempts: { increment: 1 } },
+      data: {
+        failedAttempts: lock ? 0 : attempts,
+        lockedUntil: lock ? new Date(Date.now() + LOCK_MINUTES * 60_000) : undefined,
+      },
     });
-    redirect('/login?error=invalid');
+    redirect(lock ? '/login?error=locked' : '/login?error=invalid');
   }
   await prisma.user.update({
     where: { id: user.id },
-    data: { lastLoginAt: new Date(), failedAttempts: 0 },
+    data: { lastLoginAt: new Date(), failedAttempts: 0, lockedUntil: null },
   });
   const token = await createSessionToken({
     userId: user.id,
@@ -94,7 +106,11 @@ export default async function LoginPage({
 
           {error && (
             <div className="mb-5 rounded-lg bg-red-950/40 border border-red-900/60 px-4 py-3 text-sm text-red-300">
-              {error === 'missing' ? 'Veuillez renseigner vos identifiants.' : 'Identifiants incorrects. Veuillez réessayer.'}
+              {error === 'missing'
+                ? 'Veuillez renseigner vos identifiants.'
+                : error === 'locked'
+                ? 'Compte temporairement verrouillé après plusieurs échecs. Réessayez dans 15 minutes.'
+                : 'Identifiants incorrects. Veuillez réessayer.'}
             </div>
           )}
 

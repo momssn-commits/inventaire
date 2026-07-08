@@ -22,6 +22,11 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // HSTS — activé uniquement derrière HTTPS (HSTS_ENABLED=true) pour ne
+          // pas verrouiller les navigateurs tant que le certificat n'est pas en place.
+          ...(process.env.HSTS_ENABLED === 'true'
+            ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' }]
+            : []),
           // Camera autorisée (scanner codes-barres) ; micro/géoloc bloqués.
           {
             key: 'Permissions-Policy',
