@@ -27,7 +27,7 @@ const groups: Group[] = [
     items: [
       { href: '/dashboard',   label: 'Tableau de bord',    icon: LayoutDashboard },
       { href: '/produits',    label: 'Produits',            icon: Package },
-      { href: '/stock',       label: 'État des stocks',     icon: Layers },
+      { href: '/stock',       label: 'État',                icon: Layers },
       { href: '/lots',        label: 'Lots',                icon: Archive },
     ],
   },
