@@ -12,9 +12,9 @@ export const dynamic = 'force-dynamic';
 const PER_PAGE = 50;
 
 const CONDITION_COLORS: Record<string, string> = {
-  'BON ETAT': 'bg-emerald-900/30 text-emerald-400',
-  'MAUVAIS ETAT': 'bg-red-900/30 text-red-400',
-  'HORS SERVICE': 'bg-zinc-800 text-zinc-400',
+  'BON ETAT': 'bg-emerald-100 text-emerald-700',
+  'MAUVAIS ETAT': 'bg-red-100 text-red-700',
+  'HORS SERVICE': 'bg-zinc-100 text-zinc-600',
 };
 
 export default async function LotsPage({
@@ -107,7 +107,7 @@ export default async function LotsPage({
           </div>
           <div className="flex items-center gap-2 pb-1">
             <input type="checkbox" name="expired" value="1" id="exp" defaultChecked={sp.expired === '1'} className="size-4" />
-            <label htmlFor="exp" className="text-sm text-zinc-300">Expirés seulement</label>
+            <label htmlFor="exp" className="text-sm text-zinc-700">Expirés seulement</label>
           </div>
           <button type="submit" className="btn-secondary"><Filter className="size-4" /> Filtrer</button>
         </form>
@@ -158,7 +158,7 @@ export default async function LotsPage({
                     <td className="text-xs">{lot.brand ?? '—'}</td>
                     <td>
                       {lot.condition ? (
-                        <span className={`badge text-xs ${CONDITION_COLORS[lot.condition] ?? 'bg-zinc-800 text-zinc-300'}`}>
+                        <span className={`badge text-xs ${CONDITION_COLORS[lot.condition] ?? 'bg-zinc-100 text-zinc-600'}`}>
                           {lot.condition}
                         </span>
                       ) : '—'}

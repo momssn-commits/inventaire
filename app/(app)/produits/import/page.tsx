@@ -129,7 +129,7 @@ export default function ImportProductsPage() {
           type="file"
           accept=".csv,.txt"
           onChange={handleFile}
-          className="block w-full text-sm text-zinc-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer"
+          className="block w-full text-sm text-zinc-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer"
         />
         {fileName && (
           <p className="mt-2 text-sm" style={{ color: 'rgb(148,155,180)' }}>
